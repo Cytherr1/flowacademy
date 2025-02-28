@@ -1,24 +1,35 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import Google from "next-auth/providers/google"
-import { pool } from "./db/db"
+import { PrismaAdapter } from "@auth/prisma-adapter"
+import db from "./db"
+import { schema } from "./schema"
 
-export const { auth, handlers, signIn } = NextAuth({ providers: [
-	Google,
-	Credentials({
-		credentials: {
-			email: {},
-			password: {}
-		},
-		authorize: async (credentials) => {
-      const email = "ugur@mail.com"
-      const password = "12345"
-      
-      if ( credentials.email === email && credentials.password === password ) {
-        return { email, password }
-      } else {
-        throw new Error("Invalid credentials")
+const adapter = PrismaAdapter(db);
+
+export const { auth, handlers, signIn, signOut } = NextAuth({ 
+  adapter,
+  providers: [
+    Google,
+    Credentials({
+      credentials: {
+        email: {},
+        password: {}
+      },
+      authorize: async (credentials) => {
+
+        const validatedCredentials = schema.parse(credentials)
+
+        const user = await db.user.findFirst({
+          where: {
+            email: validatedCredentials.email,
+            password: validatedCredentials.password
+          }
+        })
+        if(!user) {
+          throw new Error("Invalid credentials")
+        }
+        return user
       }
-		}
-	})
+    })
 ]})
