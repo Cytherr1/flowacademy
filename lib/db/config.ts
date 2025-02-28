@@ -1,7 +1,4 @@
 import mysql, { Pool, PoolConnection } from "mysql2";
-import dotenv from "dotenv";
-
-dotenv.config({ path: `${__dirname}/../../.env.local` });
 
 const pool: Pool = mysql.createPool({
   connectionLimit: 10,
