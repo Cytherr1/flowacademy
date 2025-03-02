@@ -20,6 +20,7 @@
     "@mantine/hooks": "^7.17.0",
     "@prisma/client": "^6.4.1",
     "axios": "^1.8.1",
+    "cloudinary": "^2.0.1",
     "formidable": "^3.5.2",
     "next": "15.1.7",
     "next-auth": "^5.0.0-beta.25",
