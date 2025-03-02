@@ -17,6 +17,7 @@
   "dependencies": {
     "@auth/prisma-adapter": "^2.8.0",
     "@mantine/core": "^7.17.0",
+    "@mantine/form": "^7.17.1",
     "@mantine/hooks": "^7.17.0",
     "@prisma/client": "^6.4.1",
     "axios": "^1.8.1",
