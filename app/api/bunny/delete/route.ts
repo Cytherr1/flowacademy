@@ -14,12 +14,12 @@ export async function DELETE(request: Request) {
     if (!storageZoneName || !apiKey) {
       throw new Error("Storage zone or API key not configured");
     }
-    
+
     const allowedExtensions = ['mp4', 'webm', 'mov', 'mkv'];
 
     for (let ext of allowedExtensions) {
       const filePath = `${process.env.BUNNY_HOSTNAME}/${storageZoneName}/${userID}-${videoID}-${uploadTime}.${ext}`;
-      console.log(`Attempting to delete file: ${filePath}`); 
+      console.log(`Attempting to delete file: ${filePath}`);
 
       try {
         await axios.delete(filePath, {

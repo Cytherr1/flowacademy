@@ -23,7 +23,7 @@ const UploadForm = () => {
     formData.append('file', file);
 
     try {
-      const response = await fetch('/api/upload', {
+      const response = await fetch('/api/bunny/upload', {
         method: 'POST',
         body: formData,
       });

@@ -1,9 +1,15 @@
+/* 
+
+localhost:3000/api/bunny/upload olarak derlemeniz gerekir.
+534434 id numaralı user'ın id'sini URL'e eklerseniz sadece o kişiye ait videolar size gelir.
+Kullanıcı log-in olduktan sonra bu API sayesinde ilgili workspace'lerin videoları bu şekilde çekilebilir.
+
+*/
+
 import { IncomingForm, File as FormidableFile } from "formidable";
 import fs from "fs";
 import axios from "axios";
 import createNodeRequest from "@/lib/createNodeRequest";
-
-const ALLOWED_VIDEO_FORMATS = ["video/mp4", "video/webm", "video/quicktime", "video/x-matroska"];
 
 export const config = {
   api: {
@@ -38,15 +44,6 @@ export async function POST(request: Request) {
         );
       }
 
-      if (!ALLOWED_VIDEO_FORMATS.includes(file.mimetype || "")) {
-        return resolve(
-          Response.json(
-            { error: "Invalid file type. Only mp4, webm, mov, and mkv are allowed." },
-            { status: 400 }
-          )
-        );
-      }
-
       const fileStream = fs.createReadStream(file.filepath);
 
       try {
@@ -67,6 +64,7 @@ export async function POST(request: Request) {
           })
         );
       } catch (error: any) {
+        console.log(error);
         return resolve(
           Response.json(
             { error: error.message || "File upload failed" },
