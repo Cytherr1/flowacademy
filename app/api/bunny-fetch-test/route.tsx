@@ -1,16 +1,16 @@
-// app/api/videos/route.ts
 import { NextResponse } from "next/server";
 import axios from "axios";
 
 export async function GET() {
   try {
-    const storageZoneName = 'deneme-uur-murti';
-        const apiKey = '05476f05-562e-4c1e-aa56d129d480-0843-4a52';
+    const storageZoneName = process.env.BUNNY_STORAGE_ZONE_NAME;
+    const apiKey = process.env.BUNNY_API_KEY;
+
     if (!storageZoneName || !apiKey) {
       throw new Error("Storage zone or API key not configured");
     }
 
-    const listUrl = `https://storage.bunnycdn.com/${storageZoneName}/?recursive=true`;
+    const listUrl = `${process.env.BUNNY_HOSTNAME}/${storageZoneName}/?recursive=true`;
     const response = await axios.get(listUrl, {
       headers: {
         AccessKey: apiKey,
