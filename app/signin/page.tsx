@@ -9,8 +9,8 @@ export default function Home() {
     <Page>
       <Stack
         w="100%"
-        mt={200} 
-        justify="flex-start" 
+        mah="100%" 
+        justify="center" 
         align="center"
       >
         <SignInForm/>
