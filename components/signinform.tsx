@@ -2,7 +2,7 @@
 import { zodResolver } from 'mantine-form-zod-resolver';
 import { z } from 'zod';
 import { Form, useForm } from '@mantine/form';
-import { Anchor, Button, Flex, Group, PasswordInput, Stack, Text, TextInput } from '@mantine/core';
+import { Anchor, Button, Flex, Group, Paper, PasswordInput, Stack, Text, TextInput } from '@mantine/core';
 import Link from 'next/link';
 
 export default function SignInForm() {
@@ -27,7 +27,9 @@ export default function SignInForm() {
       form.validate();
       form.errors;
     }}>
-      <Stack
+      <Paper
+        withBorder
+        component={Stack}
         p="md"
         w={350}
       >
@@ -43,9 +45,9 @@ export default function SignInForm() {
           {...form.getInputProps('password')}
         />
         <Group justify="flex-end" mt="md">
-          <Button variant="default" type="submit">Submit</Button>
+          <Button variant="default" type="submit">Sign in</Button>
         </Group>
-      </Stack>
+      </Paper>
     </form>
   )
 }

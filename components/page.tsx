@@ -1,5 +1,5 @@
 "use client";
-import { Box } from "@mantine/core";
+import { Flex } from "@mantine/core";
 
 export default function Page({
   children,
@@ -7,11 +7,12 @@ export default function Page({
   children: React.ReactNode;
 }>) {
   return (
-	<Box
+	<Flex
     pt="60px"
     mih="100vh"
+    miw="100vw"
   >
 	  { children }
-	</Box>
+	</Flex>
   )
 }

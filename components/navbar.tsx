@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { ActionIcon, Button, Grid, Group, Title, useComputedColorScheme, useMantineColorScheme } from '@mantine/core';
+import { ActionIcon, Button, Grid, Group, Paper, Title, useComputedColorScheme, useMantineColorScheme } from '@mantine/core';
 import { navData } from '@/lib/data';
 import { useHeadroom } from '@mantine/hooks';
 import { IconMoon, IconSun } from '@tabler/icons-react';
@@ -14,7 +14,10 @@ export default function Navbar() {
 
   return (
     <nav>
-      <Grid
+      <Paper
+        withBorder
+        radius="none"
+        component={Grid}
         w="100%"
         align="center"
         style={{
@@ -43,7 +46,7 @@ export default function Navbar() {
         </Grid.Col>
         <Grid.Col span={4}>
           <Group justify="flex-end">
-            <Button variant="default">Sign In</Button>
+            <Button variant="default" component={Link} href="/signin">Sign In</Button>
             <Button variant="default">Profile</Button>
             <ActionIcon
               onClick={() => setColorScheme(computedColorScheme === 'light' ? 'dark' : 'light')}
@@ -55,7 +58,7 @@ export default function Navbar() {
             </ActionIcon>
           </Group>
         </Grid.Col>
-      </Grid>
+      </Paper>
     </nav>
   )
 }
