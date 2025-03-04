@@ -1,5 +1,10 @@
+import Page from "@/components/page";
+import SignInForm from "@/components/signinform";
+
 export default function Home() {
   return (
-    <div>Deneme</div>
+    <Page>
+      Ana sayfa
+    </Page>
   );
 }
