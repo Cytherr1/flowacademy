@@ -52,9 +52,8 @@ export default function Navbar() {
               onClick={() => setColorScheme(computedColorScheme === 'light' ? 'dark' : 'light')}
               variant="default"
               size="input-sm"
-              aria-label="Toggle color scheme"
             >
-              { computedColorScheme === 'light' ? <IconMoon stroke={1.5} /> : <IconSun stroke={1.5} /> }
+              <IconMoon stroke={1.5} />
             </ActionIcon>
           </Group>
         </Grid.Col>

@@ -10,7 +10,6 @@ export default function Page({
 	<Flex
     pt="60px"
     mih="100vh"
-    miw="100vw"
   >
 	  { children }
 	</Flex>

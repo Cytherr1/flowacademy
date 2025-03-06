@@ -16,10 +16,10 @@ export default function RootLayout({
   return (
     <html lang="en" {...mantineHtmlProps}>
       <head>
-        <ColorSchemeScript/>
+        <ColorSchemeScript defaultColorScheme="auto"/>
       </head>
       <body>
-        <MantineProvider>
+        <MantineProvider defaultColorScheme="auto">
           <Navbar/>
           {children}
         </MantineProvider>
