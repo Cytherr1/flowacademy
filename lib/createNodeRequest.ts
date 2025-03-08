@@ -1,3 +1,5 @@
+"use server"
+
 import { Readable } from "stream";
 import { IncomingMessage } from "http";
 
