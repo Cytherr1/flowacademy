@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core';
 import "@mantine/core/styles.css";
 import Navbar from "@/components/navbar";
+import Footer from "@/components/footer";
 
 export const metadata: Metadata = {
   title: "FlowAcademy",
@@ -22,6 +23,7 @@ export default function RootLayout({
         <MantineProvider defaultColorScheme="auto">
           <Navbar/>
           {children}
+          <Footer/>
         </MantineProvider>
       </body>
     </html>

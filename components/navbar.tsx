@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { ActionIcon, Button, Grid, Group, Paper, Title, useComputedColorScheme, useMantineColorScheme } from '@mantine/core';
 import { navData } from '@/lib/data';
 import { useHeadroom } from '@mantine/hooks';
-import { IconMoon, IconSun } from '@tabler/icons-react';
+import { IconMoon } from '@tabler/icons-react';
 
 export default function Navbar() {
 
