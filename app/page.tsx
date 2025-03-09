@@ -1,10 +1,11 @@
+
+import { Hero } from "@/components/hero";
 import Page from "@/components/page";
-import SignInForm from "@/components/signinform";
 
 export default function Home() {
   return (
     <Page>
-      Ana sayfa
+      <Hero></Hero>
     </Page>
   );
 }
