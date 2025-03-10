@@ -1,11 +1,12 @@
 "use client"
 
+import Documentation from "@/components/documentation"
 import Page from "@/components/page"
 
-export default function Documentation(){
+export default function Docs(){
     return (
         <Page>
-            Documentation
+            <Documentation></Documentation>
         </Page>
     )
 }

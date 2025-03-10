@@ -16,7 +16,7 @@ export const navData = [
 export const heroData = [
 	{
 		header: "Free and open source",
-		body: " – we do not charge you for anything."
+		body: " – no free trial, no bullshit."
 	},
 	{
 		header: "Easy to use",
