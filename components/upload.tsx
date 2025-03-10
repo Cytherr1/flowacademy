@@ -9,7 +9,11 @@ interface FormValues {
   file: File | null;
 }
 
-const Upload = () => {
+interface UploadProps {
+  onSuccess?: (url: string) => void;
+}
+
+const Upload = ({ onSuccess }: UploadProps = {}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | null }>({
     text: '',
@@ -48,6 +52,11 @@ const Upload = () => {
           type: 'success',
         });
         form.reset();
+        
+        // Call the onSuccess callback if provided
+        if (onSuccess && data.url) {
+          onSuccess(data.url);
+        }
       } else {
         setMessage({
           text: `Upload failed: ${data.error || 'Unknown error'}`,
