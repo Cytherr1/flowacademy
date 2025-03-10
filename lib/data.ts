@@ -13,6 +13,21 @@ export const navData = [
 	},
 ] as const
 
+export const footData = [
+	{
+		name: "Start a new project",
+		link: "/workspace"
+	},
+	{
+		name: "My workspace",
+		link: "/workspace"
+	},
+	{
+		name: "Profile",
+		link: "/profile"
+	},
+] as const
+
 export const heroData = [
 	{
 		header: "Free and open source",
