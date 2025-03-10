@@ -5,12 +5,15 @@ import { ActionIcon, Button, Grid, Group, Paper, Title, useComputedColorScheme, 
 import { navData } from '@/lib/data';
 import { useHeadroom } from '@mantine/hooks';
 import { IconMoon } from '@tabler/icons-react';
+import { useSession } from 'next-auth/react';
 
 export default function Navbar() {
 
   const pinned = useHeadroom({ fixedAt: 120 })
   const { setColorScheme } = useMantineColorScheme();
   const computedColorScheme = useComputedColorScheme('light', { getInitialValueInEffect: true });
+
+  const { data: session } = useSession();
 
   return (
     <nav>
@@ -46,8 +49,7 @@ export default function Navbar() {
         </Grid.Col>
         <Grid.Col span={4}>
           <Group justify="flex-end">
-            <Button variant="default" component={Link} href="/signin">Sign In</Button>
-            <Button variant="default">Profile</Button>
+            {session ? <Button variant="default">Profile</Button> : <Button variant="default" component={Link} href="/signin">Sign In</Button>}
             <ActionIcon
               onClick={() => setColorScheme(computedColorScheme === 'light' ? 'dark' : 'light')}
               variant="default"

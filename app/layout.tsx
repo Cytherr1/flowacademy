@@ -3,6 +3,7 @@ import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/c
 import "@mantine/core/styles.css";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
+import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
   title: "FlowAcademy",
@@ -21,9 +22,11 @@ export default function RootLayout({
       </head>
       <body>
         <MantineProvider defaultColorScheme="auto">
-          <Navbar/>
-          {children}
-          <Footer/>
+          <SessionProvider>
+            <Navbar/>
+            {children}
+            <Footer/>
+          </SessionProvider>
         </MantineProvider>
       </body>
     </html>
