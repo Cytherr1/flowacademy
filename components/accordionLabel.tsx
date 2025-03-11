@@ -1,4 +1,5 @@
 "use client";
+
 import { Group, Text, Image } from "@mantine/core";
 import NextImage from "next/image";
 
@@ -13,12 +14,11 @@ export default function AccordionLabel({
   image,
   description,
 }: AccordionLabelProps) {
-  // Handle image path - convert relative paths to absolute
-  const imageSrc = image.startsWith("../") 
-    ? image.replace("../", "/") 
-    : image.startsWith("./") 
-      ? image.replace("./", "/") 
-      : image;
+  const imageSrc = image.startsWith("../")
+    ? image.replace("../", "/")
+    : image.startsWith("./")
+    ? image.replace("./", "/")
+    : image;
 
   return (
     <Group wrap="nowrap">
@@ -31,6 +31,7 @@ export default function AccordionLabel({
         alt={`${label} logo`}
         width={75}
         height={75}
+        radius="xl"
       />
       <div>
         <Text size="xl">{label}</Text>
