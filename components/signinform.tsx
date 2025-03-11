@@ -3,6 +3,7 @@ import { zodResolver } from 'mantine-form-zod-resolver';
 import { z } from 'zod';
 import { useForm } from '@mantine/form';
 import { Button, Group, Paper, PasswordInput, Stack, TextInput } from '@mantine/core';
+import { userLogin } from '@/lib/actions/auth';
 
 export default function SignInForm() {
 
@@ -15,16 +16,22 @@ export default function SignInForm() {
     mode: 'uncontrolled',
     initialValues: {
       email: "",
-    password: ""
+      password: ""
     },
     validate: zodResolver(schema),
+    onSubmitPreventDefault: 'validation-failed',
   });
 
   return (
-    <form onSubmit={(e) => { 
-      e.preventDefault()
-      form.validate();
-      form.errors;
+    <form 
+    action={ async (formData: FormData) => {
+      await userLogin(formData);
+    }}
+    onSubmit={() => {
+      form.onSubmit(() => {
+        form.validate()
+        form.errors
+      })
     }}>
       <Paper
         withBorder
@@ -34,12 +41,14 @@ export default function SignInForm() {
       >
         <TextInput
           label="Email"
+          name='email'
           placeholder="flowacademy@email.com"
           key={form.key("email")}
           {...form.getInputProps('email')}
         />
         <PasswordInput
           label="Password"
+          name='password'
           key={form.key("password")}
           {...form.getInputProps('password')}
         />

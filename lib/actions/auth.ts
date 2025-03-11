@@ -2,8 +2,8 @@
 
 import { signIn, signOut } from "../auth";
 
-export const userLogin = async () => {
-	await signIn("credentials", { redirectTo: "/" });
+export const userLogin = async (formData: FormData) => {
+	await signIn("credentials", { email: formData.get('email'), password: formData.get('password'), redirectTo: "/"});
 }
 
 export const googleLogin = async () => {

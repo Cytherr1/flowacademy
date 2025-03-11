@@ -5,7 +5,7 @@ import { ActionIcon, Burger, Button, Drawer, Grid, Group, Paper, Space, Stack, T
 import { navData } from '@/lib/data';
 import { useDisclosure, useHeadroom } from '@mantine/hooks';
 import { IconMoon } from '@tabler/icons-react';
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 
 export default function Navbar() {
 
@@ -13,7 +13,7 @@ export default function Navbar() {
   const { setColorScheme } = useMantineColorScheme();
   const computedColorScheme = useComputedColorScheme('light', { getInitialValueInEffect: true });
 
-  const [opened, { open, close, toggle }] = useDisclosure(false);
+  const [opened, { close, toggle }] = useDisclosure(false);
 
   const { data: session } = useSession();
 
@@ -57,7 +57,7 @@ export default function Navbar() {
           </Grid.Col>
           <Grid.Col span={{lg: 4, sm: 3 }}>
             <Group justify="flex-end">
-              {session ? <Button variant="default">Sign out</Button> : <Button variant="default" component={Link} href="/signin">Sign In</Button>}
+              {session ? <Button variant="default" onClick={ async () => { await signOut() }}>Sign out</Button> : <Button variant="default" component={Link} href="/signin">Sign In</Button>}
               <ActionIcon
                 onClick={() => setColorScheme(computedColorScheme === 'light' ? 'dark' : 'light')}
                 variant="default"
@@ -88,7 +88,7 @@ export default function Navbar() {
             <Stack>
               {
                 navData.map((e, i) =>
-                  <Button variant="default" component={Link} href={e.link} key={i}>
+                  <Button variant="default" onClick={close} component={Link} href={e.link} key={i}>
                     {e.name}
                   </Button>
                 )
@@ -96,8 +96,8 @@ export default function Navbar() {
               {
                 session ? 
                 <>
-                  <Button variant="default" component={Link} href="/workspace">Workspace</Button>
-                  <Button variant="default" component={Link} href="/profile">Profile</Button>
+                  <Button variant="default" onClick={close} component={Link} href="/workspace">Workspace</Button>
+                  <Button variant="default" onClick={close} component={Link} href="/profile">Profile</Button>
                 </> : <></>
               }
             </Stack>
@@ -109,7 +109,10 @@ export default function Navbar() {
               >
                 <IconMoon stroke={1.5} />
               </ActionIcon>
-              {session ? <Button variant="default">Sign out</Button> : <Button variant="default" component={Link} href="/signin">Sign In</Button>}
+              { session ? 
+                <Button variant="default" onClick={ async () => { await signOut() }}>Sign out</Button> : 
+                <Button variant="default" onClick={close} component={Link} href="/signin">Sign In</Button>
+              }
             </Group>
           </Stack>
         </Drawer>
