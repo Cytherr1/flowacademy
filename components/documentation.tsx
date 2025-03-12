@@ -111,8 +111,8 @@ export default function Documentation() {
 
   const responsiveContent = [
     <Box key="step1" p="md">
-      <Title order={1}>Register or Sign in</Title>
-      <Text c="dimmed" mt="xs">
+      <Title ta="center" order={1}>Register or Sign in</Title>
+      <Text ta="center" c="dimmed" mt="xs">
         Create an account or sign in to your existing account to get started.
       </Text>
       <Center mt="md">
@@ -138,12 +138,12 @@ export default function Documentation() {
       </Center>
     </Box>,
     <Box key="step2" p="md">
-      <Title order={1}>Upload Your Video</Title>
-      <Text c="dimmed" mt="xs">
+      <Title ta="center" order={1}>Upload Your Video</Title>
+      <Text ta="center" c="dimmed" mt="xs">
         Upload your video by dragging and dropping or selecting from your
         device.
       </Text>
-      <Text c="dimmed" mt="xs">
+      <Text ta="center" c="dimmed" mt="xs">
         Supported formats: MP4, MOV, AVI. Maximum file size: 20 MB.
       </Text>
       <Center mt="xs">
@@ -159,11 +159,11 @@ export default function Documentation() {
       </Center>
     </Box>,
     <Box key="step3" p="md">
-      <Title order={1}>Edit Your Steps</Title>
-      <Text c="dimmed" mt="xs">
+      <Title ta="center" order={1}>Edit Your Steps</Title>
+      <Text ta="center" c="dimmed" mt="xs">
         Adjust the automatically detected steps or add your own custom steps.
       </Text>
-      <Text c="dimmed" mt="xs">
+      <Text ta="center" c="dimmed" mt="xs">
         You can add annotations, change timestamps, and reorder steps as needed.
       </Text>
       <Center mt="xs">
@@ -179,11 +179,11 @@ export default function Documentation() {
       </Center>
     </Box>,
     <Box key="step4" p="md">
-      <Title order={1}>Create PDF</Title>
-      <Text c="dimmed" mt="xs">
+      <Title ta="center" order={1}>Create PDF</Title>
+      <Text ta="center" c="dimmed" mt="xs">
         Generate a PDF document with all your steps and annotations.
       </Text>
-      <Text c="dimmed" mt="xs">
+      <Text ta="center" c="dimmed" mt="xs">
         You can customize the layout and download or share the final document.
       </Text>
       <Center mt="xs">
