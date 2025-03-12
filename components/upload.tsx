@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button, FileInput, Paper, Group, Stack, Alert } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconUpload, IconAlertCircle, IconCheck } from '@tabler/icons-react';
+import { handleError } from '@/lib/errorHandler';
 
 interface FormValues {
   file: File | null;
@@ -58,14 +59,26 @@ const Upload = ({ onSuccess }: UploadProps = {}) => {
           onSuccess(data.url);
         }
       } else {
+        // Use the error handler to process the API error
+        const errorResponse = handleError(
+          data.error || 'Upload failed',
+          'Failed to upload file'
+        );
+        
         setMessage({
-          text: `Upload failed: ${data.error || 'Unknown error'}`,
+          text: errorResponse.message,
           type: 'error',
         });
       }
-    } catch {
+    } catch (error) {
+      // Use the error handler for unexpected errors
+      const errorResponse = handleError(
+        error,
+        'An error occurred during the upload'
+      );
+      
       setMessage({
-        text: 'An error occurred during the upload.',
+        text: errorResponse.message,
         type: 'error',
       });
     } finally {

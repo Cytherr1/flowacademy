@@ -10,6 +10,7 @@ import { IncomingForm, File as FormidableFile } from "formidable";
 import fs from "fs";
 import axios from "axios";
 import createNodeRequest from "@/lib/createNodeRequest";
+import { handleError } from "@/lib/errorHandler";
 
 export const config = {
   api: {
@@ -24,8 +25,16 @@ export async function POST(request: Request) {
   return new Promise((resolve) => {
     form.parse(nodeReq, async (err, fields, files) => {
       if (err) {
+        const errorResponse = handleError(
+          err,
+          "File upload failed"
+        );
+        
         return resolve(
-          Response.json({ error: "File upload failed" }, { status: 500 })
+          Response.json(
+            { error: errorResponse.message },
+            { status: 500 }
+          )
         );
       }
 
@@ -39,8 +48,16 @@ export async function POST(request: Request) {
       }
 
       if (!file) {
+        const errorResponse = handleError(
+          new Error("No file uploaded"),
+          "No file uploaded"
+        );
+        
         return resolve(
-          Response.json({ error: "No file uploaded" }, { status: 400 })
+          Response.json(
+            { error: errorResponse.message },
+            { status: 400 }
+          )
         );
       }
 
@@ -63,11 +80,15 @@ export async function POST(request: Request) {
             url: `${process.env.BUNNY_PULL_ZONE}/${file.originalFilename}`,
           })
         );
-      } catch (error: any) {
-        console.log(error);
+      } catch (error) {
+        const errorResponse = handleError(
+          error,
+          "File upload to Bunny CDN failed"
+        );
+        
         return resolve(
           Response.json(
-            { error: error.message || "File upload failed" },
+            { error: errorResponse.message },
             { status: 500 }
           )
         );
