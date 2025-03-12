@@ -60,11 +60,11 @@ export const softwareData = [
     image: "/1735052977147.jpg",
     label: "Muhammed Özmen",
     description:
-      "Software Engineer | Artificial Intelligence | Computer Vision | Machine Learning | Deep Learning",
-    content: "Rust 2500k+ hours.",
-    social1: "https://github.com/muhammedozmen",
-    social2: "https://www.linkedin.com/in/muhammedozmen/",
-    social3: "",
+      "Software Engineer",
+    content: "Someone who loves learning and a feeling of achievement, uses the mind-to-code philosophy and makes a point of personal development. Artificial intelligence and deep learning with Python and PyTorch | Computer vision with OpenCV and Yolo",
+    social1: "https://www.cinemanya.com/",
+    social2: "https://github.com/muhammedozmen",
+    social3: "https://www.linkedin.com/in/muhammedozmen/",
     social4: "",
   },
   {
