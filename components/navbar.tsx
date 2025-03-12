@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { ActionIcon, Burger, Button, Drawer, Grid, Group, Paper, Space, Stack, Title, useComputedColorScheme, useMantineColorScheme } from '@mantine/core';
+import { ActionIcon, Burger, Button, Drawer, Grid, Group, Paper, Stack, Title, useComputedColorScheme, useMantineColorScheme } from '@mantine/core';
 import { navData } from '@/lib/data';
 import { useDisclosure, useHeadroom } from '@mantine/hooks';
 import { IconMoon } from '@tabler/icons-react';

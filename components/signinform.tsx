@@ -1,16 +1,11 @@
 "use client";
 import { zodResolver } from 'mantine-form-zod-resolver';
-import { z } from 'zod';
 import { useForm } from '@mantine/form';
 import { Button, Group, Paper, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { userLogin } from '@/lib/actions/auth';
+import { loginSchema } from '@/lib/schema';
 
 export default function SignInForm() {
-
-  const schema = z.object({
-    email: z.string().email({ message: 'Invalid email' }),
-    password: z.string().min(8, { message: 'Invalid password' })
-  });
   
   const form = useForm({
     mode: 'uncontrolled',
@@ -18,20 +13,17 @@ export default function SignInForm() {
       email: "",
       password: ""
     },
-    validate: zodResolver(schema),
+    validate: zodResolver(loginSchema),
     onSubmitPreventDefault: 'validation-failed',
   });
 
   return (
     <form 
-    action={ async (formData: FormData) => {
-      await userLogin(formData);
-    }}
-    onSubmit={() => {
-      form.onSubmit(() => {
+      action={ async (formData: FormData) => {
         form.validate()
-        form.errors
-      })
+        if(form.isValid()) {
+          await userLogin(formData);
+        }
     }}>
       <Paper
         withBorder

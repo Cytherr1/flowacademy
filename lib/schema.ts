@@ -1,8 +1,8 @@
 import { z } from "zod"
 
-const schema  = z.object({
-	email: z.string().email(),
-  password: z.string().min(8)
-})
+const loginSchema = z.object({
+  email: z.string().email({ message: 'Invalid email' }),
+  password: z.string().min(8, { message: 'Invalid password' })
+});
 
-export { schema }
+export { loginSchema }

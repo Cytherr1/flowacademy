@@ -85,7 +85,7 @@ model Account {
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
-  userId       String
+  userId       String   @unique
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id])
  
