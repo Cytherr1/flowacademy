@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Button } from "@mantine/core";
+import { useState } from "react";
+import { Button, Stack } from "@mantine/core";
 import { pdf, PDFDownloadLink } from "@react-pdf/renderer";
 import PDFDocument from "./pdfDocument";
+import Chart, { StepData } from "./Chart";
 
 interface User {
   id: string;
@@ -11,18 +12,41 @@ interface User {
   email: string;
 }
 
-const PDFViewer: React.FC<{ user: User }> = ({ user }) => {
+interface PDFViewerProps {
+  user: User;
+  chartData?: StepData[];
+}
+
+const PDFViewer: React.FC<PDFViewerProps> = ({ user, chartData = [] }) => {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
   const generatePdf = async () => {
     const blob = await pdf(
-      <PDFDocument user={user} />
+      <PDFDocument user={user} chartData={chartData} />
     ).toBlob();
     setPdfUrl(URL.createObjectURL(blob));
   };
 
   return (
-    <div>
+    <Stack gap="md">
+      {chartData.length > 0 && (
+        <Stack gap="lg">
+          <Chart 
+            data={chartData} 
+            type="bar" 
+            title="Step Completion Statistics" 
+            height={250}
+          />
+          
+          <Chart 
+            data={chartData} 
+            type="pie" 
+            title="Step Distribution" 
+            height={300}
+          />
+        </Stack>
+      )}
+
       <Button
         onClick={generatePdf}
         variant="filled"
@@ -41,7 +65,7 @@ const PDFViewer: React.FC<{ user: User }> = ({ user }) => {
       )}
 
       <PDFDownloadLink
-        document={<PDFDocument user={user} />}
+        document={<PDFDocument user={user} chartData={chartData} />}
         fileName="FlowAcademy.pdf"
       >
         {({ loading }) => (
@@ -50,7 +74,7 @@ const PDFViewer: React.FC<{ user: User }> = ({ user }) => {
           </Button>
         )}
       </PDFDownloadLink>
-    </div>
+    </Stack>
   );
 };
 
