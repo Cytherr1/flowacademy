@@ -1,5 +1,4 @@
 "use client";
-
 import {
   Text,
   Accordion,
@@ -9,6 +8,7 @@ import {
   Stack,
   Group,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import { softwareData, industrialData } from "@/lib/data";
 import AccordionLabel from "./accordionLabel";
 import { getSocialButtons } from "./getSocialButtons";
@@ -26,6 +26,8 @@ interface DataItem {
 }
 
 export default function AboutComponent() {
+  const isLargeScreen = useMediaQuery("(min-width: 1200px)");
+
   const software = softwareData.map((item: DataItem) => (
     <Accordion.Item value={item.id} key={item.label}>
       <Accordion.Control>
@@ -50,45 +52,77 @@ export default function AboutComponent() {
     </Accordion.Item>
   ));
 
+  if (isLargeScreen) {
+    return (
+      <Center miw="100%" mah="100%">
+        <Stack align="center" w="100%">
+          <Title order={1} ta="center">
+            Software Engineering
+          </Title>
+          <Text ta="center" mb={20} c="dimmed">
+            Meet our software engineering team!
+            <br />
+            Click on panels for further information!
+          </Text>
+          <Box w="75%" mx="auto">
+            <Accordion chevronPosition="right" variant="contained">
+              {software}
+            </Accordion>
+          </Box>
+        </Stack>
+        <Stack align="center" w="100%">
+          <Title order={1} ta="center">
+            Industrial Engineering
+          </Title>
+          <Text ta="center" mb={20} c="dimmed">
+            Meet our industrial engineering team!
+            <br />
+            Click on panels for further information!
+          </Text>
+          <Box w="75%" mx="auto">
+            <Accordion chevronPosition="right" variant="contained">
+              {industrial}
+            </Accordion>
+          </Box>
+        </Stack>
+      </Center>
+    );
+  }
+
   return (
     <Center miw="100%" mah="100%">
-      <Stack align="center" w="100%">
-        <Title order={1} ta="center">
-          Software Engineering
-        </Title>
-        <Text ta="center" mb={20} c="dimmed">
-          From the first stirrings of life beneath water... to the great beasts
-          of the Stone Age...
-          <br />
-          to man taking his first upright steps, you have come far.
-          <br />
-          Now begins your greatest quest: from this early cradle of civilization
-          on towards the stars.
-        </Text>
-        <Box w="75%" mx="auto">
-          <Accordion chevronPosition="right" variant="contained">
-            {software}
-          </Accordion>
-        </Box>
-      </Stack>
-      <Stack align="center" w="100%">
-        <Title order={1} ta="center">
-          Industrial Engineering
-        </Title>
-        <Text ta="center" mb={20} c="dimmed">
-          From the first stirrings of life beneath water... to the great beasts
-          of the Stone Age...
-          <br />
-          to man taking his first upright steps, you have come far.
-          <br />
-          Now begins your greatest quest: from this early cradle of civilization
-          on towards the stars.
-        </Text>
-        <Box w="75%" mx="auto">
-          <Accordion chevronPosition="right" variant="contained">
-            {industrial}
-          </Accordion>
-        </Box>
+      <Stack py="xl" px="md" style={{ maxWidth: "100%" }}>
+        <Stack align="center" w="100%">
+          <Title order={1} ta="center">
+            Software Engineering
+          </Title>
+          <Text ta="center" mb={20} c="dimmed">
+            Meet our software engineering team!
+            <br />
+            Click on panels for further information!
+          </Text>
+          <Box w="100%" mx="auto">
+            <Accordion chevronPosition="right" variant="contained">
+              {software}
+            </Accordion>
+          </Box>
+        </Stack>
+
+        <Stack align="center" w="100%" mt="xl">
+          <Title order={1} ta="center">
+            Industrial Engineering
+          </Title>
+          <Text ta="center" mb={20} c="dimmed">
+            Meet our industrial engineering team!
+            <br />
+            Click on panels for further information!
+          </Text>
+          <Box w="100%" mx="auto">
+            <Accordion chevronPosition="right" variant="contained">
+              {industrial}
+            </Accordion>
+          </Box>
+        </Stack>
       </Stack>
     </Center>
   );

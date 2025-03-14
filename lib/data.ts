@@ -38,7 +38,7 @@ export const heroData = [
     body: " – upload your video, improve your steps.",
   },
   {
-    header: "Generate Reports",
+    header: "Generate reports",
     body: " - not necessary to use different tools.",
   },
 ];
