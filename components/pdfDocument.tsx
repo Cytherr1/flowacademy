@@ -2,7 +2,9 @@
 import React from "react";
 import { Document, Page, Text, StyleSheet, View } from "@react-pdf/renderer";
 import PDFChart from "./PDFChart";
+import PDFFlowChart from "./PDFFlowChart";
 import { StepData } from "./Chart";
+import { FlowData } from "./FlowChart";
 
 interface PDFDocumentProps {
   user: {
@@ -11,6 +13,7 @@ interface PDFDocumentProps {
     email: string;
   };
   chartData?: StepData[];
+  flowData?: FlowData;
 }
 
 const styles = StyleSheet.create({
@@ -34,7 +37,11 @@ const styles = StyleSheet.create({
   },
 });
 
-const PDFDocument: React.FC<PDFDocumentProps> = ({ user, chartData = [] }) => (
+const PDFDocument: React.FC<PDFDocumentProps> = ({ 
+  user, 
+  chartData = [],
+  flowData,
+}) => (
   <Document>
     <Page style={styles.page}>
       <Text style={styles.header}>Flow Academy User Report</Text>
@@ -58,6 +65,16 @@ const PDFDocument: React.FC<PDFDocumentProps> = ({ user, chartData = [] }) => (
             data={chartData} 
             type="pie" 
             title="Step Distribution" 
+          />
+        </View>
+      )}
+
+      {flowData && flowData.nodes.length > 0 && (
+        <View>
+          <Text style={styles.subheader}>Process Flow</Text>
+          <PDFFlowChart 
+            data={flowData} 
+            title="Learning Path Flow" 
           />
         </View>
       )}
