@@ -5,7 +5,8 @@ import { ActionIcon, Burger, Button, Drawer, Grid, Group, Paper, Stack, Title, u
 import { navData } from '@/lib/data';
 import { useDisclosure, useHeadroom } from '@mantine/hooks';
 import { IconMoon } from '@tabler/icons-react';
-import { signOut, useSession } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
+import { useCurrentSession } from '@/lib/hooks/useCurrentSession';
 
 export default function Navbar() {
 
@@ -15,7 +16,7 @@ export default function Navbar() {
 
   const [opened, { close, toggle }] = useDisclosure(false);
 
-  const { data: session } = useSession();
+  const { session } = useCurrentSession();
 
   return (
     <nav>

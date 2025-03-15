@@ -2,12 +2,12 @@
 import { footData, navData } from "@/lib/data";
 import { Anchor, Button, Divider, Grid, Group, Paper, Stack, Text, Title } from "@mantine/core";
 import Link from "next/link";
-import { useSession } from 'next-auth/react';
+import { useCurrentSession } from "@/lib/hooks/useCurrentSession";
 
 
 export default function Footer() {
 
-  const { data: session } = useSession();
+  const { session } = useCurrentSession();
 
   return (
     <footer>
