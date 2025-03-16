@@ -16,7 +16,7 @@ export const navData = [
 export const footData = [
   {
     name: "Start a new project",
-    link: "/workspace",
+    link: "/createproject",
   },
   {
     name: "My workspace",

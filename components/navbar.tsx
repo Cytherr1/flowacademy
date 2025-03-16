@@ -33,7 +33,7 @@ export default function Navbar() {
           backgroundColor: 'var(--mantine-color-body)',
         }}
       >
-        <Grid align="center" display={{sm:"block", xs: "none", base: "none"}}>
+        <Grid align="center" display={session ? { lg: "block", xs: "none", base: "none" }: {sm:"block", xs: "none", base: "none"}}>
           <Grid.Col span={{lg: 2, sm: 3 }} >
             <Title order={2}>FlowAcademy</Title>
           </Grid.Col>
@@ -69,7 +69,7 @@ export default function Navbar() {
             </Group>
           </Grid.Col>
         </Grid>
-        <Grid align="center" display={{sm:"none", xs: "block", base: "block"}}>
+        <Grid align="center" display={session ? { lg: "none", xs: "block", base: "block" } : {sm:"none", xs: "block", base: "block"}}>
           <Grid.Col span={2}>
             <Burger opened={opened} onClick={toggle} aria-label="Toggle navigation" />
           </Grid.Col>
@@ -83,7 +83,7 @@ export default function Navbar() {
           size="xs"
           title="Menu"
           overlayProps={{ backgroundOpacity: 0.5, blur: 4 }}
-          display={{sm:"none", xs: "block", base: "block"}}
+          display={session ? { lg: "none", xs: "block", base: "block" } : {sm:"none", xs: "block", base: "block"}}
         >
           <Stack p="md" h="90vh" justify='space-between'>
             <Stack>
