@@ -1,3 +1,4 @@
+import CreateNewButton from '@/components/createnewbutton';
 import Page from '@/components/page';
 import { auth } from '@/lib/auth';
 import { ActionIcon, Button, Flex, Stack, Table, TableTbody, TableTd, TableTh, TableThead, TableTr } from '@mantine/core'
@@ -39,13 +40,13 @@ export default async function page() {
     <Page>
       <Flex justify='center' w="100%" p="md">
         <Stack align='flex-start' w="90%">
-          <Button variant="default" rightSection={<IconPlus/>} component={Link} href="/createproject">Create new</Button>
+          <CreateNewButton></CreateNewButton>
           <Table horizontalSpacing="xl">
             <TableThead>
               <TableTr>
                 <TableTh>Element name</TableTh>
-                <TableTh/>
-                <TableTh/>
+                <TableTh>Edit</TableTh>
+                <TableTh>Delete</TableTh>
               </TableTr>
             </TableThead>
             <TableTbody>{rows}</TableTbody>
