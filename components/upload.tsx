@@ -87,7 +87,7 @@ const Upload = ({ onSuccess }: UploadProps = {}) => {
   };
 
   return (
-    <Paper p="md" withBorder radius="md" shadow="sm">
+    <Paper>
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack gap="md">
           <FileInput
@@ -108,11 +108,12 @@ const Upload = ({ onSuccess }: UploadProps = {}) => {
             </Alert>
           )}
 
-          <Group justify="flex-end">
+          <Group justify="flex-start">
             <Button
               type="submit"
               loading={isLoading}
               disabled={!form.values.file}
+              mb="md"
             >
               Upload
             </Button>
