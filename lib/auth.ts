@@ -31,6 +31,16 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         if(!user) {
           throw new Error("Invalid credentials")
         }
+
+        const userSession = await db.session.findFirst({
+          where: {
+            user: user
+          }
+        })
+        
+        if(userSession) {
+          await db.session.delete({ where: { id: userSession.id }})
+        }
         return user
       }
     })
