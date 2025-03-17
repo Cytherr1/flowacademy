@@ -1,4 +1,5 @@
 "use client";
+import { handleError } from "@/lib/errorHandler";
 import {
   ActionIcon,
   Button,
@@ -10,13 +11,95 @@ import {
   Group,
   Box,
   Title,
+  Stack,
+  FileInput,
+  Alert,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
-import { IconPlus } from "@tabler/icons-react";
+import {
+  IconAlertCircle,
+  IconCheck,
+  IconPlus,
+  IconUpload,
+} from "@tabler/icons-react";
+import { useState } from "react";
 
-export default function CreateProjectButton() {
+interface UploadProps {
+  onSuccess?: (url: string) => void;
+}
+interface FormValues {
+  file: File | null,
+  projectName: String,
+  videoType: String,
+  description: String | null,
+  outsourceLink: String | null,
+}
+
+export default function CreateProjectButton({ onSuccess }: UploadProps = {}) {
   const [opened, { open, close }] = useDisclosure(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{
+    text: string;
+    type: "success" | "error" | null;
+  }>({
+    text: "",
+    type: null,
+  });
+
+  const handleSubmit = async (values: FormValues) => {
+    if (!values.file) return;
+
+    setIsLoading(true);
+    setMessage({ text: "", type: null });
+
+    const formData = new FormData();
+    formData.append("file", values.file);
+
+    try {
+      console.log(values);
+      const response = await fetch("/api/bunny/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage({
+          text: `File uploaded successfully: ${data.url}`,
+          type: "success",
+        });
+        form.reset();
+
+        if (onSuccess && data.url) {
+          onSuccess(data.url);
+        }
+      } else {
+        const errorResponse = handleError(
+          data.error || "Upload failed",
+          "Failed to upload file"
+        );
+
+        setMessage({
+          text: errorResponse.message,
+          type: "error",
+        });
+      }
+    } catch (error) {
+      const errorResponse = handleError(
+        error,
+        "An error occurred during the upload"
+      );
+
+      setMessage({
+        text: errorResponse.message,
+        type: "error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const form = useForm({
     initialValues: {
@@ -26,13 +109,11 @@ export default function CreateProjectButton() {
       videoType: "",
       description: "",
       outsourceLink: "",
+      file: null,
     },
+    // validate yazılacak
     onSubmitPreventDefault: "validation-failed",
   });
-
-  const handleSubmit = (values: typeof form.values) => {
-    console.log(values);
-  };
 
   return (
     <Box>
@@ -74,7 +155,36 @@ export default function CreateProjectButton() {
             </Radio.Group>
           )}
 
-          {form.values.videoType === "upload" && /*<Upload />*/ <div>UploadComponent</div>}
+          {form.values.videoType === "upload" && (
+            <Stack gap="md">
+              <FileInput
+                label="Select file to upload"
+                placeholder="Click to select file"
+                accept="video/*,image/*"
+                leftSection={<IconUpload size={14} />}
+                {...form.getInputProps("file")}
+              />
+
+              {message.text && (
+                <Alert
+                  icon={
+                    message.type === "success" ? (
+                      <IconCheck />
+                    ) : (
+                      <IconAlertCircle />
+                    )
+                  }
+                  title={message.type === "success" ? "Success" : "Error"}
+                  color={message.type === "success" ? "green" : "red"}
+                >
+                  {message.text}
+                </Alert>
+              )}
+
+              <Group justify="flex-start">
+              </Group>
+            </Stack>
+          )}
 
           {form.values.videoType === "outsource" && (
             <TextInput
