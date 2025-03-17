@@ -206,11 +206,9 @@ export default function CreateNewButton({ onSuccess }: UploadProps = {}) {
           <Button fullWidth type="submit" mb="md">
             Create Project
           </Button>
-          
         </form>
       </Modal>
-
-      <Button rightSection={<IconPlus/>}>Create new</Button>
+      <Button rightSection={<IconPlus/>} onClick={open}>Create new</Button>
     </Box>
   );
 }
