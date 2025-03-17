@@ -6,17 +6,14 @@ import { navData } from '@/lib/data';
 import { useDisclosure, useHeadroom } from '@mantine/hooks';
 import { IconMoon } from '@tabler/icons-react';
 import { signOut } from 'next-auth/react';
-import { useCurrentSession } from '@/lib/hooks/useCurrentSession';
 
-export default function Navbar() {
+export default function Navbar(props : any) {
 
   const pinned = useHeadroom({ fixedAt: 120 });
   const { setColorScheme } = useMantineColorScheme();
   const computedColorScheme = useComputedColorScheme('light', { getInitialValueInEffect: true });
 
   const [opened, { close, toggle }] = useDisclosure(false);
-
-  const { session } = useCurrentSession();
 
   return (
     <nav>
@@ -33,7 +30,7 @@ export default function Navbar() {
           backgroundColor: 'var(--mantine-color-body)',
         }}
       >
-        <Grid align="center" display={session ? { lg: "block", xs: "none", base: "none" }: {sm:"block", xs: "none", base: "none"}}>
+        <Grid align="center" display={props.session ? { lg: "block", xs: "none", base: "none" }: {sm:"block", xs: "none", base: "none"}}>
           <Grid.Col span={{lg: 2, sm: 3 }} >
             <Title order={2}>FlowAcademy</Title>
           </Grid.Col>
@@ -48,7 +45,7 @@ export default function Navbar() {
               }
               
               {
-                session ? 
+                props.session ? 
                 <>
                   <Button variant="default" component={Link} href="/workspace">Workspace</Button>
                   <Button variant="default" component={Link} href="/profile">Profile</Button>
@@ -58,7 +55,7 @@ export default function Navbar() {
           </Grid.Col>
           <Grid.Col span={{lg: 4, sm: 3 }}>
             <Group justify="flex-end">
-              {session ? <Button variant="default" onClick={ async () => { await signOut() }}>Sign out</Button> : <Button variant="default" component={Link} href="/signin">Sign In</Button>}
+              {props.session ? <Button variant="default" onClick={ async () => { await signOut() }}>Sign out</Button> : <Button variant="default" component={Link} href="/signin">Sign In</Button>}
               <ActionIcon
                 onClick={() => setColorScheme(computedColorScheme === 'light' ? 'dark' : 'light')}
                 variant="default"
@@ -69,7 +66,7 @@ export default function Navbar() {
             </Group>
           </Grid.Col>
         </Grid>
-        <Grid align="center" display={session ? { lg: "none", xs: "block", base: "block" } : {sm:"none", xs: "block", base: "block"}}>
+        <Grid align="center" display={props.session ? { lg: "none", xs: "block", base: "block" } : {sm:"none", xs: "block", base: "block"}}>
           <Grid.Col span={2}>
             <Burger opened={opened} onClick={toggle} aria-label="Toggle navigation" />
           </Grid.Col>
@@ -83,7 +80,7 @@ export default function Navbar() {
           size="xs"
           title="Menu"
           overlayProps={{ backgroundOpacity: 0.5, blur: 4 }}
-          display={session ? { lg: "none", xs: "block", base: "block" } : {sm:"none", xs: "block", base: "block"}}
+          display={props.session ? { lg: "none", xs: "block", base: "block" } : {sm:"none", xs: "block", base: "block"}}
         >
           <Stack p="md" h="90vh" justify='space-between'>
             <Stack>
@@ -95,7 +92,7 @@ export default function Navbar() {
                 )
               }
               {
-                session ? 
+                props.session ? 
                 <>
                   <Button variant="default" onClick={close} component={Link} href="/workspace">Workspace</Button>
                   <Button variant="default" onClick={close} component={Link} href="/profile">Profile</Button>
@@ -110,7 +107,7 @@ export default function Navbar() {
               >
                 <IconMoon stroke={1.5} />
               </ActionIcon>
-              { session ? 
+              { props.session ? 
                 <Button variant="default" onClick={ async () => { await signOut() }}>Sign out</Button> : 
                 <Button variant="default" onClick={close} component={Link} href="/signin">Sign In</Button>
               }

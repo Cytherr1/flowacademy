@@ -2,12 +2,8 @@
 import { footData, navData } from "@/lib/data";
 import { Anchor, Button, Divider, Grid, Group, Paper, Stack, Text, Title } from "@mantine/core";
 import Link from "next/link";
-import { useCurrentSession } from "@/lib/hooks/useCurrentSession";
 
-
-export default function Footer() {
-
-  const { session } = useCurrentSession();
+export default function Footer(props : any) {
 
   return (
     <footer>
@@ -39,7 +35,7 @@ export default function Footer() {
         </Grid.Col>
         <Grid.Col p="lg" span={{lg: 4, md: 6, xs: 12}}>
           <Stack h="100%" justify="center" align="center">
-            { session ?
+            { props.session ?
               <Stack>
                 <Title order={5}>Quick Menu</Title>
                 {

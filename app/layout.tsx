@@ -4,17 +4,20 @@ import "@mantine/core/styles.css";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { SessionProvider } from "next-auth/react";
+import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "FlowAcademy",
   description: "Welcome to FlowAcademy! Learn method analysis with our digital tool.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth()
+  
   return (
     <html lang="en" {...mantineHtmlProps}>
       <head>
@@ -23,9 +26,9 @@ export default function RootLayout({
       <body>
         <MantineProvider defaultColorScheme="auto">
           <SessionProvider>
-            <Navbar/>
+            <Navbar session={session}/>
             {children}
-            <Footer/>
+            <Footer session={session}/>
           </SessionProvider>
         </MantineProvider>
       </body>

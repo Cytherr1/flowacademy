@@ -3,7 +3,6 @@ import { getSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 
-// This hook doesn't rely on the session provider
 export const useCurrentSession = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [status, setStatus] = useState<string>("unauthenticated");
