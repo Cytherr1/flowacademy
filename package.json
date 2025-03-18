@@ -26,6 +26,7 @@
     "@react-pdf/renderer": "^4.3.0",
     "@tabler/icons-react": "^3.30.0",
     "axios": "^1.8.1",
+    "bcrypt-ts": "^6.0.0",
     "eslint-plugin-jest-dom": "^5.5.0",
     "eslint-plugin-testing-library": "^7.1.1",
     "formidable": "^3.5.2",
