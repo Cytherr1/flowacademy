@@ -15,6 +15,7 @@ model Workspace {
   reports   Report[]
   project_name    String    @db.VarChar(100)
   created_at    DateTime    @default(now()) @db.Timestamp()
+  description String
 }
 
 model Video {

@@ -69,7 +69,7 @@ export async function POST(request: Request) {
 
         return resolve(
           Response.json({
-            url: `${process.env.BUNNY_PULL_ZONE}/${file.originalFilename}`,
+            url: `${process.env.BUNNY_PULL_ZONE}${file.originalFilename}`,
           })
         );
       } catch (error) {

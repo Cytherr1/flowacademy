@@ -1,5 +1,6 @@
 "use server";
 
+import { auth } from "../auth";
 import db from "../db";
 
 type CreateProjectResult = {
@@ -13,6 +14,8 @@ export async function createProjectWithoutFile(
   formData: FormData
 ): Promise<CreateProjectResult> {
   try {
+    const session = await auth();
+    const userID = session?.user?.id
     const projectName = formData.get("projectName") as string;
     const withVideo = formData.get("withVideo") === "true";
     const videoType = formData.get("videoType") as string;
@@ -48,24 +51,12 @@ export async function createProjectWithoutFile(
       }
     }
 
-    // User ID logic eklenmeli
-    // 38-72 arası değişmeli faaaaaaaaaaaaaaaam.
-    const uniqueEmail = `temp+${Date.now()}@example.com`;
-    const uniqueUsername = `denemedeneme+${Date.now} Last Name`;
-    const tempUser = await db.user.create({
-      data: {
-        name: "Test User",
-        username: uniqueUsername,
-        email: uniqueEmail,
-        password: "secret",
-      },
-    });
-
     const workspace = await db.workspace.create({
       data: {
         project_name: projectName,
-        user: { connect: { id: tempUser.id } },
+        user: { connect: { id: userID } },
         created_at: new Date(),
+        description: description,
         video: withVideo
           ? {
               create: {

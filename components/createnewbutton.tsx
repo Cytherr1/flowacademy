@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  ActionIcon,
   Button,
   Checkbox,
   Modal,
@@ -20,22 +19,10 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
-import {
-  IconAlertCircle,
-  IconCheck,
-  IconPlus,
-  IconUpload,
-} from "@tabler/icons-react";
-
+import { IconCheck, IconPlus, IconUpload } from "@tabler/icons-react";
 import { createProjectWithoutFile } from "@/lib/actions/projectActions";
 
-interface CreateProjectButtonProps {
-  onSuccess?: (url: string) => void;
-}
-
-export default function CreateNewButton({
-  onSuccess,
-}: CreateProjectButtonProps = {}) {
+export default function CreateNewButton() {
   const router = useRouter();
   const [opened, { open, close }] = useDisclosure(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -98,7 +85,9 @@ export default function CreateNewButton({
 
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
-          const percentComplete = Math.round((event.loaded / event.total) * 100);
+          const percentComplete = Math.round(
+            (event.loaded / event.total) * 100
+          );
           setUploadProgress(percentComplete);
         }
       };
@@ -210,6 +199,7 @@ export default function CreateNewButton({
             {...form.getInputProps("withVideo", { type: "checkbox" })}
             mb="md"
           />
+
           {form.values.withVideo && (
             <Radio.Group
               label="Video Type"
@@ -290,7 +280,9 @@ export default function CreateNewButton({
           </Button>
         </form>
       </Modal>
-      <Button rightSection={<IconPlus/>} onClick={open}>Create new</Button>
+      <Button rightSection={<IconPlus />} onClick={open}>
+        Create new
+      </Button>
     </Box>
   );
 }

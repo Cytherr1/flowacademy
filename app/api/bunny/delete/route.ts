@@ -2,10 +2,10 @@ import axios from "axios";
 
 export async function DELETE(request: Request) {
   try {
-    const { userID, videoID, uploadTime } = await request.json(); 
+    const { videoID } = await request.json(); 
 
-    if (!userID || !videoID || !uploadTime) {
-      return Response.json({ error: "Missing userID, videoID, or uploadTime" }, { status: 400 });
+    if (!videoID) {
+      return Response.json({ error: "Missing videoID" }, { status: 400 });
     }
 
     const storageZoneName = process.env.BUNNY_STORAGE_ZONE_NAME;
@@ -18,7 +18,7 @@ export async function DELETE(request: Request) {
     const allowedExtensions = ['mp4', 'webm', 'mov', 'mkv'];
 
     for (let ext of allowedExtensions) {
-      const filePath = `${process.env.BUNNY_HOSTNAME}/${storageZoneName}/${userID}-${videoID}-${uploadTime}.${ext}`;
+      const filePath = `${process.env.BUNNY_HOSTNAME}${storageZoneName}/${videoID}.${ext}`;
       console.log(`Attempting to delete file: ${filePath}`);
 
       try {
