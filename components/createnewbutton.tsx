@@ -44,6 +44,7 @@ export default function CreateNewButton() {
       description: "",
       outsourceLink: "",
       file: null as File | null,
+      videoID: "",
     },
     validate: {
       projectName: (value) => (value ? null : "Project name is required"),
@@ -78,6 +79,14 @@ export default function CreateNewButton() {
 
     const formData = new FormData();
     formData.append("file", form.values.file);
+    
+    // Generate a unique videoID using timestamp and random string
+    const timestamp = Date.now();
+    const randomStr = Math.random().toString(36).substring(2, 8);
+    const videoID = `video_${timestamp}_${randomStr}`;
+    
+    // Add videoID to FormData
+    formData.append("videoID", videoID);
 
     try {
       const xhr = new XMLHttpRequest();
@@ -101,6 +110,8 @@ export default function CreateNewButton() {
             type: "success",
           });
           form.setFieldValue("file", null);
+          // Store the videoID for later use when creating the project
+          form.setFieldValue("videoID", response.videoID);
         } else {
           setMessage({
             text: "Upload failed: " + xhr.statusText,
@@ -140,6 +151,16 @@ export default function CreateNewButton() {
         withCloseButton={false}
         size="lg"
       >
+        {message && message.text && (
+          <Alert 
+            color={message.type === "success" ? "green" : "red"} 
+            withCloseButton 
+            onClose={() => setMessage({text: "", type: null})}
+            mb="md"
+          >
+            {message.text}
+          </Alert>
+        )}
         <form
           action={async (formData: FormData) => {
             form.validate();
@@ -157,6 +178,7 @@ export default function CreateNewButton() {
               if (fileUrl) {
                 formData.append("fileUrl", fileUrl);
               }
+              formData.append("videoID", form.values.videoID);
 
               const result = await createProjectWithoutFile(formData);
               if (result.success && result.targetUrl) {

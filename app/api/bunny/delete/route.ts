@@ -1,4 +1,5 @@
 import axios from "axios";
+import { AxiosError } from "axios";
 
 export async function DELETE(request: Request) {
   try {
@@ -16,8 +17,9 @@ export async function DELETE(request: Request) {
     }
 
     const allowedExtensions = ['mp4', 'webm', 'mov', 'mkv'];
+    let deletedAny = false;
 
-    for (let ext of allowedExtensions) {
+    for (const ext of allowedExtensions) {
       const filePath = `${process.env.BUNNY_HOSTNAME}${storageZoneName}/${videoID}.${ext}`;
       console.log(`Attempting to delete file: ${filePath}`);
 
@@ -28,22 +30,29 @@ export async function DELETE(request: Request) {
           },
         });
         console.log(`Deleted file: ${filePath}`);
-        return Response.json({ message: "Video deleted successfully" });
-      } catch (error: any) {
-        if (error.response?.status === 404) {
+        deletedAny = true;
+      } catch (error: unknown) {
+        const axiosError = error as AxiosError;
+        if (axiosError.response?.status === 404) {
           console.log(`File not found for extension ${ext}: ${filePath}`);
           continue;
         } else {
-          throw new Error(error.response?.data || error.message || "Failed to delete video");
+          const errorMessage = axiosError.response?.data || axiosError.message || "Failed to delete video";
+          throw new Error(typeof errorMessage === 'string' ? errorMessage : 'Failed to delete video');
         }
       }
     }
 
-    return Response.json({ error: "File not found with any allowed extensions" }, { status: 404 });
-  } catch (error: any) {
-    console.log("Error deleting video:", error.response?.data || error.message);
+    if (deletedAny) {
+      return Response.json({ message: "Video deleted successfully" });
+    } else {
+      return Response.json({ error: "File not found with any allowed extensions" }, { status: 404 });
+    }
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log("Error deleting video:", err.message);
     return Response.json(
-      { error: error.message || "Failed to delete video" },
+      { error: err.message || "Failed to delete video" },
       { status: 500 }
     );
   }
