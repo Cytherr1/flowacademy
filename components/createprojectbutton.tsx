@@ -94,14 +94,11 @@ export default function CreateProjectButton({
 
     try {
       const xhr = new XMLHttpRequest();
-
       xhr.open("POST", "/api/bunny/upload", true);
 
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
-          const percentComplete = Math.round(
-            (event.loaded / event.total) * 100
-          );
+          const percentComplete = Math.round((event.loaded / event.total) * 100);
           setUploadProgress(percentComplete);
         }
       };
@@ -148,7 +145,7 @@ export default function CreateProjectButton({
   return (
     <Box>
       <Modal
-        centered={true}
+        centered
         opened={opened}
         onClose={close}
         withCloseButton={false}
@@ -157,7 +154,6 @@ export default function CreateProjectButton({
         <form
           action={async (formData: FormData) => {
             form.validate();
-
             if (!form.isValid()) {
               return;
             }
@@ -169,27 +165,19 @@ export default function CreateProjectButton({
               formData.append("videoType", form.values.videoType);
               formData.append("description", form.values.description || "");
               formData.append("outsourceLink", form.values.outsourceLink || "");
-
               if (fileUrl) {
                 formData.append("fileUrl", fileUrl);
               }
 
               const result = await createProjectWithoutFile(formData);
-
-              if (result.success) {
+              if (result.success && result.targetUrl) {
                 setMessage({
-                  text: `Project created successfully`,
+                  text: "Project created successfully",
                   type: "success",
                 });
                 form.reset();
                 setFileUrl(null);
-
-                if (onSuccess && fileUrl) {
-                  onSuccess(fileUrl);
-                }
-
-                router.refresh();
-                setTimeout(() => close(), 2000);
+                router.push(result.targetUrl);
               } else {
                 setMessage({
                   text: result.error || "Failed to create project",
@@ -217,13 +205,11 @@ export default function CreateProjectButton({
             required
             mb="md"
           />
-
           <Checkbox
             label="With Video?"
             {...form.getInputProps("withVideo", { type: "checkbox" })}
             mb="md"
           />
-
           {form.values.withVideo && (
             <Radio.Group
               label="Video Type"
@@ -237,7 +223,6 @@ export default function CreateProjectButton({
               </Group>
             </Radio.Group>
           )}
-
           {form.values.withVideo && form.values.videoType === "upload" && (
             <Stack gap="md">
               {!fileUrl ? (
@@ -250,7 +235,6 @@ export default function CreateProjectButton({
                     {...form.getInputProps("file")}
                     required
                   />
-
                   {uploadProgress > 0 && uploadProgress < 100 && (
                     <Progress
                       value={uploadProgress}
@@ -258,7 +242,6 @@ export default function CreateProjectButton({
                       radius="xl"
                     >{`${uploadProgress}%`}</Progress>
                   )}
-
                   <Button
                     onClick={handleFileUpload}
                     disabled={!form.values.file || isLoading}
@@ -279,7 +262,6 @@ export default function CreateProjectButton({
               )}
             </Stack>
           )}
-
           {form.values.withVideo && form.values.videoType === "outsource" && (
             <TextInput
               label="Outsource Link"
@@ -289,14 +271,12 @@ export default function CreateProjectButton({
               mb="md"
             />
           )}
-
           <Textarea
             label="Project Description (Optional)"
             placeholder="Enter description"
             {...form.getInputProps("description")}
             mb="md"
           />
-
           <Button
             fullWidth
             type="submit"
@@ -310,8 +290,13 @@ export default function CreateProjectButton({
           </Button>
         </form>
       </Modal>
-
-      <ActionIcon w={225} h={350} p="md" variant="default" onClick={open}>
+      <ActionIcon
+        w={225}
+        h={350}
+        p="md"
+        variant="default"
+        onClick={open}
+      >
         <IconPlus size={48} />
       </ActionIcon>
     </Box>

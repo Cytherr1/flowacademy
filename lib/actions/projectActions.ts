@@ -1,14 +1,17 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import db from "../db";
 
 type CreateProjectResult = {
   success: boolean;
   url?: string;
+  targetUrl: string;
   error?: string;
 };
 
-export async function createProjectWithoutFile(formData: FormData): Promise<CreateProjectResult> {
+export async function createProjectWithoutFile(
+  formData: FormData
+): Promise<CreateProjectResult> {
   try {
     const projectName = formData.get("projectName") as string;
     const withVideo = formData.get("withVideo") === "true";
@@ -18,45 +21,73 @@ export async function createProjectWithoutFile(formData: FormData): Promise<Crea
     const fileUrl = formData.get("fileUrl") as string;
 
     if (!projectName) {
-      return { success: false, error: "Project name is required" };
+      return {
+        success: false,
+        targetUrl: "",
+        error: "Project name is required",
+      };
     }
 
     if (withVideo) {
       if (!videoType) {
-        return { success: false, error: "Video type is required" };
+        return {
+          success: false,
+          targetUrl: "",
+          error: "Video type is required",
+        };
       }
-
       if (videoType === "upload" && !fileUrl) {
-        return { success: false, error: "File URL is required" };
+        return { success: false, targetUrl: "", error: "File URL is required" };
       }
-
       if (videoType === "outsource" && !outsourceLink) {
-        return { success: false, error: "Outsource link is required" };
+        return {
+          success: false,
+          targetUrl: "",
+          error: "Outsource link is required",
+        };
       }
     }
 
-    const project = {
-      projectName,
-      withVideo,
-      videoType: withVideo ? videoType : null,
-      description: description || null,
-      outsourceLink: (withVideo && videoType === "outsource") ? outsourceLink : null,
-      fileUrl: (withVideo && videoType === "upload") ? fileUrl : null,
-      createdAt: new Date(),
-    };
-    console.log("Project created:", project);
+    // User ID logic eklenmeli
+    // 38-72 arası değişmeli faaaaaaaaaaaaaaaam.
+    const uniqueEmail = `temp+${Date.now()}@example.com`;
+    const uniqueUsername = `denemedeneme+${Date.now} Last Name`;
+    const tempUser = await db.user.create({
+      data: {
+        name: "Test User",
+        username: uniqueUsername,
+        email: uniqueEmail,
+        password: "secret",
+      },
+    });
 
-    revalidatePath("/projects");
-    
-    return { 
-      success: true, 
-      url: fileUrl 
-    };
+    const workspace = await db.workspace.create({
+      data: {
+        project_name: projectName,
+        user: { connect: { id: tempUser.id } },
+        created_at: new Date(),
+        video: withVideo
+          ? {
+              create: {
+                file_path: videoType === "upload" ? fileUrl : outsourceLink,
+                upload_time: new Date(),
+              },
+            }
+          : undefined,
+      },
+      include: {
+        video: true,
+      },
+    });
+    const targetUrl = `/workspace/${workspace.id}`;
+    return { success: true, targetUrl };
   } catch (error) {
-    console.error("Project creation error:", error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : "An unexpected error occurred" 
+    console.error("Project creation error:", JSON.stringify(error));
+    return {
+      success: false,
+      targetUrl: "",
+      error:
+        error instanceof Error ? error.message : "An unexpected error occurred",
     };
   }
 }

@@ -1,11 +1,3 @@
-/* 
-
-localhost:3000/api/bunny/upload olarak derlemeniz gerekir.
-534434 id numaralı user'ın id'sini URL'e eklerseniz sadece o kişiye ait videolar size gelir.
-Kullanıcı log-in olduktan sonra bu API sayesinde ilgili workspace'lerin videoları bu şekilde çekilebilir.
-
-*/
-
 import { IncomingForm, File as FormidableFile } from "formidable";
 import fs from "fs";
 import axios from "axios";
