@@ -71,16 +71,29 @@ export async function POST(request: Request) {
           )
         );
       }
+      
+      // Get optional userID from form fields
+      const userID = fields.userID ? 
+        (Array.isArray(fields.userID) ? fields.userID[0] : fields.userID) : 
+        'user';
+        
+      // Get optional workspaceID from form fields
+      const workspaceID = fields.workspaceID ? 
+        (Array.isArray(fields.workspaceID) ? fields.workspaceID[0] : fields.workspaceID) : 
+        'temp';
 
       // Get file extension from original filename
       const fileExtension = file.originalFilename?.split('.').pop() || 'mp4';
+      
+      // Create a structured file name for better organization
+      const structuredVideoID = `${userID}_${workspaceID}_${videoID}`;
 
       const fileStream = fs.createReadStream(file.filepath);
 
       try {
         const storageZoneName = process.env.BUNNY_STORAGE_ZONE_NAME;
         const apiKey = process.env.BUNNY_API_KEY;
-        const uploadUrl = `${process.env.BUNNY_HOSTNAME}${storageZoneName}/${videoID}.${fileExtension}`;
+        const uploadUrl = `${process.env.BUNNY_HOSTNAME}${storageZoneName}/${structuredVideoID}.${fileExtension}`;
 
         await axios.put(uploadUrl, fileStream, {
           headers: {
@@ -91,8 +104,9 @@ export async function POST(request: Request) {
 
         return resolve(
           Response.json({
-            url: `${process.env.BUNNY_PULL_ZONE}${videoID}.${fileExtension}`,
-            videoID: videoID
+            url: `${process.env.BUNNY_PULL_ZONE}${structuredVideoID}.${fileExtension}`,
+            videoID: structuredVideoID,
+            originalVideoID: videoID // Keep the original for reference
           })
         );
       } catch (error) {

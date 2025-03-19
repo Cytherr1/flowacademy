@@ -24,13 +24,14 @@ export async function createProjectWithoutFile(
       };
     }
 
-    const projectName = formData.get("projectName") as string;
+    // Extract form data with safety checks
+    const projectName = formData.get("projectName")?.toString() || "";
     const withVideo = formData.get("withVideo") === "true";
-    const videoType = formData.get("videoType") as string;
-    const description = formData.get("description") as string;
-    const outsourceLink = formData.get("outsourceLink") as string;
-    const fileUrl = formData.get("fileUrl") as string;
-    const videoID = formData.get("videoID") as string;
+    const videoType = formData.get("videoType")?.toString() || "";
+    const description = formData.get("description")?.toString() || "No description provided";
+    const outsourceLink = formData.get("outsourceLink")?.toString() || "";
+    const fileUrl = formData.get("fileUrl")?.toString() || "";
+    const videoID = formData.get("videoID")?.toString() || "";
 
     if (!projectName) {
       return {
@@ -61,47 +62,57 @@ export async function createProjectWithoutFile(
     }
 
     try {
-      // Create workspace with required fields only
-      const workspace = await db.workspace.create({
-        data: {
-          project_name: projectName,
-          userId: userID,
-        },
-      });
+      // Direct SQL approach to avoid type issues
+      await db.$queryRaw`
+        INSERT INTO Workspace (userId, project_name, description, created_at) 
+        VALUES (${userID}, ${projectName}, ${description}, NOW())
+      `;
       
-      // Set description using Prisma's executeRaw method
-      await db.$executeRaw`UPDATE Workspace SET description = ${description || "No description provided"} WHERE id = ${workspace.id}`;
+      // Get the last inserted ID
+      const idResult = await db.$queryRaw`SELECT LAST_INSERT_ID() as id`;
       
+      // Extract the ID using a type-safe approach
+      type QueryResult = { id: number };
+      const results = idResult as QueryResult[];
+      
+      if (!results.length || !results[0].id) {
+        throw new Error("Failed to create workspace");
+      }
+      
+      const workspaceId = results[0].id;
+      
+      // For videos, create using raw SQL as well
       if (withVideo) {
-        await db.video.create({
-          data: {
-            file_path: videoType === "upload" ? fileUrl : outsourceLink,
-            workspaceId: workspace.id,
-          },
-        });
+        const filePath = videoType === "upload" ? fileUrl : outsourceLink;
+        await db.$queryRaw`
+          INSERT INTO Video (workspaceId, file_path, upload_time)
+          VALUES (${workspaceId}, ${filePath}, NOW())
+        `;
+        
+        // Log the videoID for reference
+        if (videoType === "upload" && videoID) {
+          console.log(`Video reference: ${videoID} for workspace ID: ${workspaceId}`);
+        }
       }
       
-      if (withVideo && videoID && videoType === "upload") {
-        console.log(`Stored video reference: ${videoID} for workspace ID: ${workspace.id}`);
-      }
-      
-      const targetUrl = `/workspace1/${workspace.id}`;
+      const targetUrl = `/workspace1/${workspaceId}`;
       return { success: true, targetUrl };
     } catch (dbError) {
-      console.error("Database error:", dbError);
+      const errorMessage = dbError instanceof Error ? dbError.message : String(dbError);
+      console.error("Database error:", errorMessage);
       return {
         success: false,
         targetUrl: "",
-        error: "Database error creating workspace",
+        error: `Database error: ${errorMessage}`,
       };
     }
   } catch (error) {
-    console.error("Project creation error:", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("Project creation error:", errorMessage);
     return {
       success: false,
       targetUrl: "",
-      error:
-        error instanceof Error ? error.message : "An unexpected error occurred",
+      error: errorMessage || "An unexpected error occurred"
     };
   }
 }

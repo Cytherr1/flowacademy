@@ -87,7 +87,20 @@ export default function CreateNewButton() {
     
     // Add videoID to FormData
     formData.append("videoID", videoID);
-
+    
+    // Get the current user ID from the session
+    try {
+      const userResponse = await fetch('/api/user/current');
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        if (userData.id) {
+          formData.append("userID", userData.id);
+        }
+      }
+    } catch (error) {
+      console.error("Error getting current user:", error);
+    }
+    
     try {
       const xhr = new XMLHttpRequest();
       xhr.open("POST", "/api/bunny/upload", true);
@@ -175,10 +188,15 @@ export default function CreateNewButton() {
               formData.append("videoType", form.values.videoType);
               formData.append("description", form.values.description || "");
               formData.append("outsourceLink", form.values.outsourceLink || "");
+              
               if (fileUrl) {
                 formData.append("fileUrl", fileUrl);
               }
-              formData.append("videoID", form.values.videoID);
+              
+              // Make sure videoID is a string
+              if (form.values.videoID) {
+                formData.append("videoID", form.values.videoID.toString());
+              }
 
               const result = await createProjectWithoutFile(formData);
               if (result.success && result.targetUrl) {

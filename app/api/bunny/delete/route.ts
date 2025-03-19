@@ -18,23 +18,26 @@ export async function DELETE(request: Request) {
 
     const allowedExtensions = ['mp4', 'webm', 'mov', 'mkv'];
     let deletedAny = false;
+    const deletedFiles = [];
+
+    // Log only once before we try to delete files
+    console.log(`Attempting to delete video: ${videoID}`);
 
     for (const ext of allowedExtensions) {
       const filePath = `${process.env.BUNNY_HOSTNAME}${storageZoneName}/${videoID}.${ext}`;
-      console.log(`Attempting to delete file: ${filePath}`);
-
+      
       try {
         await axios.delete(filePath, {
           headers: {
             AccessKey: apiKey,
           },
         });
-        console.log(`Deleted file: ${filePath}`);
+        deletedFiles.push(ext);
         deletedAny = true;
       } catch (error: unknown) {
         const axiosError = error as AxiosError;
         if (axiosError.response?.status === 404) {
-          console.log(`File not found for extension ${ext}: ${filePath}`);
+          // Don't log 404 errors - this is expected for extensions that don't exist
           continue;
         } else {
           const errorMessage = axiosError.response?.data || axiosError.message || "Failed to delete video";
@@ -44,13 +47,18 @@ export async function DELETE(request: Request) {
     }
 
     if (deletedAny) {
-      return Response.json({ message: "Video deleted successfully" });
+      console.log(`Successfully deleted video ${videoID} with formats: ${deletedFiles.join(', ')}`);
+      return Response.json({ 
+        message: "Video deleted successfully",
+        formats: deletedFiles
+      });
     } else {
+      console.log(`No files found for video ID: ${videoID}`);
       return Response.json({ error: "File not found with any allowed extensions" }, { status: 404 });
     }
   } catch (error: unknown) {
     const err = error as Error;
-    console.log("Error deleting video:", err.message);
+    console.error("Error deleting video:", err.message);
     return Response.json(
       { error: err.message || "Failed to delete video" },
       { status: 500 }
