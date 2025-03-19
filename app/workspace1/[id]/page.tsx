@@ -1,11 +1,23 @@
-"use client"
 import Page from "@/components/page";
 import ProjectComponent from "@/components/projectcomponent";
+import { fetchVideo, fetchWorkspaceName } from "@/lib/actions/projectActions";
 
-export default function ProjectPage() {
+export default async function ProjectPage({
+  params: { id },
+}: {
+  params: {
+    id: number;
+  };
+}) {
+  const video = await fetchVideo(id);
+  const workspaceName = await fetchWorkspaceName(id);
+
   return (
     <Page>
-      <ProjectComponent></ProjectComponent>
+      <ProjectComponent
+        video={video}
+        workspaceName={workspaceName}
+      ></ProjectComponent>
     </Page>
   );
 }

@@ -11,6 +11,7 @@ import {
   ActionIcon,
   TextInput,
   Button,
+  AspectRatio,
 } from "@mantine/core";
 import {
   IconArrowBigRightLines,
@@ -26,6 +27,11 @@ import {
 import NextImage from "next/image";
 import placeholder from "../static_content/placholder.png";
 
+interface ProjectComponentProps {
+  video: string | undefined;
+  workspaceName: string | undefined;
+}
+
 type Activity = {
   no: number;
   activity: string;
@@ -35,7 +41,10 @@ type Activity = {
   remarks: string;
 };
 
-export default function ProcessTable() {
+export default function ProjectComponent({
+  video,
+  workspaceName,
+}: ProjectComponentProps) {
   const initialActivities: Activity[] = [
     {
       no: 1,
@@ -219,18 +228,14 @@ export default function ProcessTable() {
   return (
     <Center miw="100%" mah="100%">
       <Stack>
-        <Title order={3}>Video Name Should Be Here</Title>
-        <Image
-          h={300}
-          w="100%"
-          maw={500}
-          fit="contain"
-          component={NextImage}
-          src={placeholder}
-          alt="logo"
-          mt="xs"
-          radius="md"
-        />
+        <Title mt="sm" ta="center" order={1}>{workspaceName?.toString()}</Title>
+        <AspectRatio ratio={1920 / 1080}>
+          <iframe
+            src={video}
+            style={{ border: 0 }}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          />
+        </AspectRatio>
         <Table highlightOnHover withColumnBorders>
           <Table.Thead>
             <Table.Tr>

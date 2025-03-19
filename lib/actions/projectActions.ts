@@ -15,7 +15,7 @@ export async function createProjectWithoutFile(
 ): Promise<CreateProjectResult> {
   try {
     const session = await auth();
-    const userID = session?.user?.id
+    const userID = session?.user?.id;
     if (!userID) {
       return {
         success: false,
@@ -24,11 +24,11 @@ export async function createProjectWithoutFile(
       };
     }
 
-    // Extract form data with safety checks
     const projectName = formData.get("projectName")?.toString() || "";
     const withVideo = formData.get("withVideo") === "true";
     const videoType = formData.get("videoType")?.toString() || "";
-    const description = formData.get("description")?.toString() || "No description provided";
+    const description =
+      formData.get("description")?.toString() || "No description provided";
     const outsourceLink = formData.get("outsourceLink")?.toString() || "";
     const fileUrl = formData.get("fileUrl")?.toString() || "";
     const videoID = formData.get("videoID")?.toString() || "";
@@ -62,43 +62,41 @@ export async function createProjectWithoutFile(
     }
 
     try {
-      // Direct SQL approach to avoid type issues
       await db.$queryRaw`
         INSERT INTO Workspace (userId, project_name, description, created_at) 
         VALUES (${userID}, ${projectName}, ${description}, NOW())
       `;
-      
-      // Get the last inserted ID
+
       const idResult = await db.$queryRaw`SELECT LAST_INSERT_ID() as id`;
-      
-      // Extract the ID using a type-safe approach
+
       type QueryResult = { id: number };
       const results = idResult as QueryResult[];
-      
+
       if (!results.length || !results[0].id) {
         throw new Error("Failed to create workspace");
       }
-      
+
       const workspaceId = results[0].id;
-      
-      // For videos, create using raw SQL as well
+
       if (withVideo) {
         const filePath = videoType === "upload" ? fileUrl : outsourceLink;
         await db.$queryRaw`
           INSERT INTO Video (workspaceId, file_path, upload_time)
           VALUES (${workspaceId}, ${filePath}, NOW())
         `;
-        
-        // Log the videoID for reference
+
         if (videoType === "upload" && videoID) {
-          console.log(`Video reference: ${videoID} for workspace ID: ${workspaceId}`);
+          console.log(
+            `Video reference: ${videoID} for workspace ID: ${workspaceId}`
+          );
         }
       }
-      
+
       const targetUrl = `/workspace1/${workspaceId}`;
       return { success: true, targetUrl };
     } catch (dbError) {
-      const errorMessage = dbError instanceof Error ? dbError.message : String(dbError);
+      const errorMessage =
+        dbError instanceof Error ? dbError.message : String(dbError);
       console.error("Database error:", errorMessage);
       return {
         success: false,
@@ -112,7 +110,63 @@ export async function createProjectWithoutFile(
     return {
       success: false,
       targetUrl: "",
-      error: errorMessage || "An unexpected error occurred"
+      error: errorMessage || "An unexpected error occurred",
     };
+  }
+}
+
+export async function fetchVideo(workspaceID: number | string) {
+  try {
+    if (!workspaceID) {
+      throw new Error("Missing workspaceID");
+    }
+
+    const parsedWorkspaceID =
+      typeof workspaceID === "string" ? parseInt(workspaceID, 10) : workspaceID;
+
+    if (isNaN(parsedWorkspaceID)) {
+      throw new Error("Invalid workspaceID format");
+    }
+
+    const video = await db.video.findFirst({
+      where: {
+        workspaceId: parsedWorkspaceID,
+      },
+    });
+
+    const videoPath = video?.file_path;
+
+    return videoPath;
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log("Error fetching workspace name:", err.message);
+    throw new Error(err.message || "Failed to fetch workspace name");
+  }
+}
+
+export async function fetchWorkspaceName(workspaceID: number | string) {
+  try {
+    if (!workspaceID) {
+      throw new Error("Missing workspaceID");
+    }
+
+    const parsedWorkspaceID =
+      typeof workspaceID === "string" ? parseInt(workspaceID, 10) : workspaceID;
+
+    if (isNaN(parsedWorkspaceID)) {
+      throw new Error("Invalid workspaceID format");
+    }
+
+    const workspace = await db.workspace.findFirst({
+      where: {
+        id: parsedWorkspaceID,
+      },
+    });
+
+    return workspace?.project_name;
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log("Error fetching workspace name:", err.message);
+    throw new Error(err.message || "Failed to fetch workspace name");
   }
 }
