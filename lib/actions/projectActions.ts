@@ -9,6 +9,18 @@ type CreateProjectResult = {
   targetUrl: string;
   error?: string;
 };
+interface saveProjectRowsProps {
+  workspaceID: number;
+  activities: Rows[];
+}
+type Rows = {
+  distance: number;
+  time: number;
+  remarks: string | null;
+  activityNo: number;
+  activityName: string;
+  symbolIndex: number | null;
+};
 
 export async function createProjectWithoutFile(
   formData: FormData
@@ -168,5 +180,123 @@ export async function fetchWorkspaceName(workspaceID: number | string) {
     const err = error as Error;
     console.log("Error fetching workspace name:", err.message);
     throw new Error(err.message || "Failed to fetch workspace name");
+  }
+}
+
+export async function fetchProjectRows(workspaceID: number | string) {
+  try {
+    if (!workspaceID) {
+      throw new Error("Missing workspaceID");
+    }
+
+    const parsedWorkspaceID =
+      typeof workspaceID === "string" ? parseInt(workspaceID, 10) : workspaceID;
+
+    if (isNaN(parsedWorkspaceID)) {
+      throw new Error("Invalid workspaceID format");
+    }
+
+    const rows = await db.rows.findMany({
+      where: {
+        workspaceId: parsedWorkspaceID,
+      },
+      select: {
+        id: false,
+        workspaceId: false,
+        createdAt: false,
+        updatedAt: false,
+        workspace: false,
+        activityNo: true,
+        activityName: true,
+        distance: true,
+        time: true,
+        symbolIndex: true,
+        remarks: true,
+      },
+      orderBy: {
+        activityNo: "asc",
+      },
+    });
+
+    return rows;
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log("Error fetching project rows:", err.message);
+    throw new Error(err.message || "Failed to fetch project rows");
+  }
+}
+
+export async function saveProjectRows({
+  workspaceID,
+  activities,
+}: saveProjectRowsProps) {
+  try {
+    if (!workspaceID || !activities) {
+      throw new Error("Missing workspaceID or activities");
+    }
+    const parsedWorkspaceID =
+      typeof workspaceID === "string" ? parseInt(workspaceID, 10) : workspaceID;
+    if (isNaN(parsedWorkspaceID)) {
+      throw new Error("Invalid workspaceID format");
+    }
+
+    await db.rows.deleteMany({
+      where: {
+        workspaceId: parsedWorkspaceID,
+      },
+    });
+
+    await db.rows.createMany({
+      data: activities.map((activity) => ({
+        workspaceId: parsedWorkspaceID,
+        activityNo: activity.activityNo,
+        activityName: activity.activityName,
+        distance: activity.distance,
+        time: activity.time,
+        symbolIndex: activity.symbolIndex,
+        remarks: activity.remarks,
+      })),
+    });
+
+    return { success: true };
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log("Error saving project rows:", err.message);
+    throw new Error(err.message || "Failed to save project rows");
+  }
+}
+interface DeleteRowProps {
+  workspaceID: number;
+  activityNo: number; // Single row identifier
+}
+
+export async function deleteRow({
+  workspaceID,
+  activityNo,
+}: DeleteRowProps) {
+  try {
+    if (!workspaceID || activityNo === undefined) {
+      throw new Error("Missing workspaceID or activityNo");
+    }
+    
+    const parsedWorkspaceID =
+      typeof workspaceID === "string" ? parseInt(workspaceID, 10) : workspaceID;
+      
+    if (isNaN(parsedWorkspaceID)) {
+      throw new Error("Invalid workspaceID format");
+    }
+    
+    await db.rows.deleteMany({
+      where: {
+        workspaceId: parsedWorkspaceID,
+        activityNo: activityNo
+      },
+    });
+    
+    return { success: true };
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log("Error deleting row:", err.message);
+    throw new Error(err.message || "Failed to delete row");
   }
 }

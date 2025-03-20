@@ -1,17 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Table,
   Center,
   Stack,
   Title,
-  Image,
   Group,
   ActionIcon,
   TextInput,
   Button,
   AspectRatio,
+  Notification,
+  Flex,
+  Modal,
 } from "@mantine/core";
 import {
   IconArrowBigRightLines,
@@ -23,103 +25,41 @@ import {
   IconSquare,
   IconSquareFilled,
   IconPlus,
+  IconDeviceFloppy,
+  IconCheck,
+  IconX,
+  IconTrash,
+  IconPdf,
+  IconClipboardTextFilled,
 } from "@tabler/icons-react";
-import NextImage from "next/image";
-import placeholder from "../static_content/placholder.png";
+import { deleteRow, saveProjectRows } from "@/lib/actions/projectActions";
+import { useDisclosure } from "@mantine/hooks";
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import autoTable from "jspdf-autotable";
 
 interface ProjectComponentProps {
+  id: number;
   video: string | undefined;
   workspaceName: string | undefined;
+  rows: Rows[];
 }
 
-type Activity = {
-  no: number;
-  activity: string;
+type Rows = {
   distance: number;
   time: number;
-  selectedSymbol: number | null;
-  remarks: string;
+  remarks: string | null;
+  activityNo: number;
+  activityName: string;
+  symbolIndex: number | null;
 };
 
 export default function ProjectComponent({
+  id,
   video,
   workspaceName,
+  rows: initialRows,
 }: ProjectComponentProps) {
-  const initialActivities: Activity[] = [
-    {
-      no: 1,
-      activity: "Collect small pieces of fabric.",
-      distance: 0,
-      time: 3,
-      selectedSymbol: null,
-      remarks: "",
-    },
-    {
-      no: 2,
-      activity: "Transport fabric pieces to sewing machine",
-      distance: 15,
-      time: 2,
-      selectedSymbol: null,
-      remarks: "",
-    },
-    {
-      no: 3,
-      activity: "Wait for machine availability",
-      distance: 0,
-      time: 5,
-      selectedSymbol: null,
-      remarks: "",
-    },
-    {
-      no: 4,
-      activity: "Inspect machine setup",
-      distance: 0,
-      time: 3,
-      selectedSymbol: null,
-      remarks: "By a human",
-    },
-    {
-      no: 5,
-      activity: "Attach fabric pieces to the machine",
-      distance: 0,
-      time: 3,
-      selectedSymbol: null,
-      remarks: "",
-    },
-    {
-      no: 6,
-      activity: "Sew fabric pieces together",
-      distance: 0,
-      time: 10,
-      selectedSymbol: null,
-      remarks: "",
-    },
-    {
-      no: 7,
-      activity: "Remove sewn fabric pieces",
-      distance: 0,
-      time: 2,
-      selectedSymbol: null,
-      remarks: "",
-    },
-    {
-      no: 8,
-      activity: "Transport sewn pieces to storage area",
-      distance: 25,
-      time: 3,
-      selectedSymbol: null,
-      remarks: "By a machine",
-    },
-    {
-      no: 9,
-      activity: "Store fabric pieces in the warehouse",
-      distance: 0,
-      time: 2,
-      selectedSymbol: null,
-      remarks: "",
-    },
-  ];
-
   const iconMapping = [
     { outlined: IconCircle, filled: IconCircleFilled },
     { outlined: IconSquare, filled: IconSquareFilled },
@@ -128,13 +68,32 @@ export default function ProjectComponent({
     { outlined: IconTriangleInverted, filled: IconTriangleInvertedFilled },
   ];
 
-  const [activities, setActivities] = useState<Activity[]>(initialActivities);
+  const [activities, setActivities] = useState<Rows[]>(initialRows || []);
+  const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteStatus, setDeleteStatus] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
+  const [opened, { open, close }] = useDisclosure(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
+
+  useEffect(() => {
+    if (initialRows && initialRows.length > 0) {
+      setActivities(initialRows);
+    }
+  }, [initialRows]);
 
   const handleSymbolClick = (activityIndex: number, iconIndex: number) => {
     setActivities((prevActivities) =>
       prevActivities.map((activity, index) =>
         index === activityIndex
-          ? { ...activity, selectedSymbol: iconIndex }
+          ? { ...activity, symbolIndex: iconIndex }
           : activity
       )
     );
@@ -142,7 +101,7 @@ export default function ProjectComponent({
 
   const handleChange = (
     activityIndex: number,
-    field: keyof Activity,
+    field: keyof Rows,
     value: string | number
   ) => {
     setActivities((prevActivities) =>
@@ -153,24 +112,146 @@ export default function ProjectComponent({
   };
 
   const addNewRow = () => {
-    const newActivity: Activity = {
-      no: activities.length + 1,
-      activity: "",
+    const newActivity: Rows = {
+      activityNo: activities.length + 1,
+      activityName: "",
       distance: 0,
       time: 0,
-      selectedSymbol: null,
-      remarks: "",
+      symbolIndex: null,
+      remarks: null,
     };
     setActivities([...activities, newActivity]);
   };
 
-  const rows = activities.map((act, actIndex) => (
-    <Table.Tr key={act.no}>
-      <Table.Td>{act.no}</Table.Td>
+  const saveRows = async () => {
+    setSaving(true);
+    setSaveStatus(null);
+    const workspaceID = await id;
+
+    try {
+      await saveProjectRows({
+        workspaceID,
+        activities,
+      });
+
+      setSaveStatus({
+        success: true,
+        message: "Activities saved successfully",
+      });
+    } catch (error) {
+      console.error("Error saving activities:", error);
+      setSaveStatus({
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Failed to save activities",
+      });
+    } finally {
+      setSaving(false);
+
+      if (saveStatus) {
+        setTimeout(() => {
+          setSaveStatus(null);
+        }, 3000);
+      }
+    }
+  };
+
+  const handleDelete = async (activityNo: number) => {
+    setDeleting(true);
+    setDeleteStatus(null);
+
+    const workspaceID = await id;
+
+    try {
+      await deleteRow({
+        workspaceID,
+        activityNo,
+      });
+
+      setActivities((prevActivities) =>
+        prevActivities.filter((activity) => activity.activityNo !== activityNo)
+      );
+
+      setActivities((prevActivities) =>
+        prevActivities.map((activity, index) => ({
+          ...activity,
+          activityNo: index + 1,
+        }))
+      );
+
+      setDeleteStatus({
+        success: true,
+        message: "Row deleted successfully",
+      });
+    } catch (error) {
+      console.error("Error deleting row:", error);
+      setDeleteStatus({
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Failed to delete row",
+      });
+    } finally {
+      setDeleting(false);
+
+      setTimeout(() => {
+        setDeleteStatus(null);
+      }, 3000);
+    }
+  };
+
+  const generatePDF = () => {
+    setGeneratingPdf(true);
+    try {
+      const doc = new jsPDF();
+      
+      doc.setFontSize(18);
+      doc.text(workspaceName || "Project Activities", 14, 20);
+      doc.setFontSize(12);
+      
+      const getSymbolText = (symbolIndex: number | null) => {
+        if (symbolIndex === null) return '';
+        const symbols = ['Circle', 'Square', 'Arrow', 'D Shape', 'Triangle'];
+        return symbols[symbolIndex] || '';
+      };
+      
+      const tableData = activities.map(act => [
+        act.activityNo.toString(),
+        act.activityName,
+        act.distance.toString(),
+        act.time.toString(),
+        getSymbolText(act.symbolIndex),
+        act.remarks || ''
+      ]);
+      
+      autoTable(doc, {
+        head: [['No.', 'Activity', 'Distance (m)', 'Time (m)', 'Symbol', 'Remarks']],
+        body: tableData,
+        startY: 30,
+        theme: 'grid',
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [66, 139, 202] }
+      });
+      
+      const pdfBlob = doc.output('blob');
+      const url = URL.createObjectURL(pdfBlob);
+      setPdfUrl(url);
+      open();
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    } finally {
+      setGeneratingPdf(false);
+    }
+  };
+
+  const tableRows = activities.map((act, actIndex) => (
+    <Table.Tr key={act.activityNo}>
+      <Table.Td>{act.activityNo}</Table.Td>
       <Table.Td>
         <TextInput
-          value={act.activity}
-          onChange={(e) => handleChange(actIndex, "activity", e.target.value)}
+          value={act.activityName}
+          onChange={(e) =>
+            handleChange(actIndex, "activityName", e.target.value)
+          }
           placeholder="Enter activity"
           size="xs"
         />
@@ -201,7 +282,7 @@ export default function ProjectComponent({
         <Group>
           {iconMapping.map((icon, iconIndex) => {
             const IconComponent =
-              act.selectedSymbol === iconIndex ? icon.filled : icon.outlined;
+              act.symbolIndex === iconIndex ? icon.filled : icon.outlined;
             return (
               <ActionIcon
                 key={iconIndex}
@@ -216,11 +297,22 @@ export default function ProjectComponent({
       </Table.Td>
       <Table.Td>
         <TextInput
-          value={act.remarks}
+          value={act.remarks || ""}
           onChange={(e) => handleChange(actIndex, "remarks", e.target.value)}
           placeholder="Enter remark"
           size="xs"
         />
+      </Table.Td>
+      <Table.Td>
+        <Button
+          loading={deleting}
+          variant="light"
+          size="input-sm"
+          color="red"
+          onClick={() => handleDelete(act.activityNo)}
+        >
+          <IconTrash />
+        </Button>
       </Table.Td>
     </Table.Tr>
   ));
@@ -228,14 +320,73 @@ export default function ProjectComponent({
   return (
     <Center miw="100%" mah="100%">
       <Stack>
-        <Title mt="sm" ta="center" order={1}>{workspaceName?.toString()}</Title>
-        <AspectRatio ratio={1920 / 1080}>
-          <iframe
-            src={video}
-            style={{ border: 0 }}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          />
-        </AspectRatio>
+        <Title mt="sm" ta="center" order={1}>
+          {workspaceName?.toString()}
+        </Title>
+        {video && (
+          <AspectRatio>
+            <iframe
+              src={video}
+              style={{ border: 0 }}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            />
+          </AspectRatio>
+        )}
+
+        {saveStatus && (
+          <Notification
+            title={saveStatus.success ? "Success" : "Error"}
+            color={saveStatus.success ? "green" : "red"}
+            icon={
+              saveStatus.success ? <IconCheck size={18} /> : <IconX size={18} />
+            }
+            withCloseButton
+            onClose={() => setSaveStatus(null)}
+          >
+            {saveStatus.message}
+          </Notification>
+        )}
+
+        <Modal
+          centered
+          opened={opened}
+          onClose={close}
+          withCloseButton={false}
+          size="xl"
+          title="Project Activities PDF"
+        >
+          {pdfUrl && (
+            <AspectRatio ratio={1/1.4} h={600}>
+              <iframe
+                src={pdfUrl}
+                style={{ width: '100%', height: '100%', border: 'none' }}
+                title="Activities PDF"
+              />
+            </AspectRatio>
+          )}
+        </Modal>
+
+        <Flex justify="space-between">
+          <Button
+            onClick={saveRows}
+            loading={saving}
+            leftSection={<IconDeviceFloppy size={24} />}
+            variant="filled"
+            color="blue"
+          >
+            Save Activities
+          </Button>
+          <Button
+            leftSection={<IconClipboardTextFilled size={24} />}
+            variant="filled"
+            color="blue"
+            onClick={generatePDF}
+            loading={generatingPdf}
+          >
+            Generate PDF
+          </Button>
+        </Flex>
+
         <Table highlightOnHover withColumnBorders>
           <Table.Thead>
             <Table.Tr>
@@ -245,9 +396,10 @@ export default function ProjectComponent({
               <Table.Th>Time (m)</Table.Th>
               <Table.Th>Symbols</Table.Th>
               <Table.Th>Remarks</Table.Th>
+              <Table.Th></Table.Th>
             </Table.Tr>
           </Table.Thead>
-          <Table.Tbody>{rows}</Table.Tbody>
+          <Table.Tbody>{tableRows}</Table.Tbody>
         </Table>
         <Button onClick={addNewRow} mt="xs" mb="xl" variant="light">
           <IconPlus size={24} />

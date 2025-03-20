@@ -1,4 +1,4 @@
-"use server"
+"use server";
 
 import db from "../db";
 
@@ -19,40 +19,43 @@ export async function deleteWorkspace(workspaceID: number) {
         },
         select: {
           id: true,
-          file_path: true
-        }
+          file_path: true,
+        },
       });
 
       if (video) {
         // Extract the videoID from the file_path if possible
         // The file_path may contain the videoID in the format: endpoint/videoID.extension
         let videoIDForBunny = String(video.id); // Default to the database ID
-        
+
         if (video.file_path) {
           // Try to extract the videoID from the file path
-          const filePathParts = video.file_path.split('/');
+          const filePathParts = video.file_path.split("/");
           const fileNameWithExtension = filePathParts[filePathParts.length - 1];
-          
+
           if (fileNameWithExtension) {
             // Remove extension from filename
-            const videoIDFromPath = fileNameWithExtension.split('.')[0];
+            const videoIDFromPath = fileNameWithExtension.split(".")[0];
             if (videoIDFromPath) {
               videoIDForBunny = videoIDFromPath;
               console.log(`Extracted videoID from path: ${videoIDForBunny}`);
             }
           }
         }
-        
+
         // Delete the video from Bunny CDN
         try {
-          const response = await fetch(`http://localhost:3000/api/bunny/delete`, {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ videoID: videoIDForBunny }),
-          });
-          
+          const response = await fetch(
+            `http://localhost:3000/api/bunny/delete`,
+            {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ videoID: videoIDForBunny }),
+            }
+          );
+
           const result = await response.json();
           console.log(`Bunny deletion result:`, result);
         } catch (fetchError) {
@@ -67,6 +70,12 @@ export async function deleteWorkspace(workspaceID: number) {
 
     // Delete from database
     await db.video.deleteMany({
+      where: {
+        workspaceId: workspaceID,
+      },
+    });
+
+    await db.rows.deleteMany({
       where: {
         workspaceId: workspaceID,
       },

@@ -16,6 +16,7 @@ model Workspace {
   reports      Report[]
   video        Video?
   user         User     @relation(fields: [userId], references: [id])
+  activities   Rows[]
 
   @@index([userId], map: "Workspace_userId_fkey")
 }
@@ -115,4 +116,20 @@ model Authenticator {
   user                 User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, credentialID])
+}
+
+model Rows {
+  id            Int       @id @default(autoincrement())
+  workspaceId   Int
+  activityNo    Int
+  activityName  String    @db.VarChar(255)
+  distance      Float     @default(0)
+  time          Float     @default(0)
+  symbolIndex   Int?
+  remarks       String?   @db.VarChar(255)
+  createdAt     DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt     DateTime  @updatedAt
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  @@index([workspaceId])
 }

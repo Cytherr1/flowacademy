@@ -30,6 +30,8 @@
     "eslint-plugin-jest-dom": "^5.5.0",
     "eslint-plugin-testing-library": "^7.1.1",
     "formidable": "^3.5.2",
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
     "mantine-form-zod-resolver": "^1.1.0",
     "next": "15.1.7",
     "next-auth": "^5.0.0-beta.25",
