@@ -1,6 +1,5 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { signIn, signOut } from "../auth";
 import db from "../db";
 import { genSalt, hash } from "bcrypt-ts"

@@ -14,6 +14,18 @@ const signUpSchema = z.object({
 .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
+});
+
+const editProfile = z.object({
+  name: z.string(),
+  username: z.string(),
+  image: z.string(),
+  password: z.string(),
+  confirmPassword: z.string(),
+})
+.refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
 });;
 
-export { loginSchema, signUpSchema };
+export { loginSchema, signUpSchema, editProfile };
