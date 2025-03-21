@@ -85,7 +85,7 @@ export default function Workspace({ workspaces }: DeleteWorkspaceProps) {
       <TableTd>{element.project_name}</TableTd>
       <TableTd>{element.description}</TableTd>
       <TableTd>
-        <Link href={`/workspace1/${element.id}`}>
+        <Link href={`/workspace/${element.id}`}>
           <ActionIcon variant="default" size="input-sm" color="blue">
             <IconPointerFilled />
           </ActionIcon>

@@ -47,7 +47,7 @@ export default function Navbar(props : any) {
               {
                 props.session ? 
                 <>
-                  <Button variant="default" component={Link} href="/workspace1">Workspace</Button>
+                  <Button variant="default" component={Link} href="/workspace">Workspace</Button>
                   <Button variant="default" component={Link} href="/profile">Profile</Button>
                 </> : <></>
               }
@@ -94,7 +94,7 @@ export default function Navbar(props : any) {
               {
                 props.session ? 
                 <>
-                  <Button variant="default" onClick={close} component={Link} href="/workspace1">Workspace</Button>
+                  <Button variant="default" onClick={close} component={Link} href="/workspace">Workspace</Button>
                   <Button variant="default" onClick={close} component={Link} href="/profile">Profile</Button>
                 </> : <></>
               }
