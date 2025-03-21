@@ -1,7 +1,6 @@
 import Page from "@/components/page";
 import SignUpForm from "@/components/signupform";
-import { Anchor, Button, Divider, Group, Stack, Text } from "@mantine/core";
-import { IconBrandGoogleFilled } from "@tabler/icons-react";
+import { Anchor, Divider, Group, Stack, Text } from "@mantine/core";
 import Link from "next/link";
 
 export default function Register(){

@@ -10,7 +10,6 @@ import {
   Button,
   Stack,
   Center,
-  Box,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { heroData } from "@/lib/data";
