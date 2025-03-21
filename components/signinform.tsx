@@ -44,7 +44,7 @@ export default function SignInForm() {
           key={form.key("password")}
           {...form.getInputProps('password')}
         />
-        <Group justify="flex-end" mt="md">
+        <Group justify="center" mt="md">
           <Button variant="default" type="submit">Sign in</Button>
         </Group>
       </Paper>

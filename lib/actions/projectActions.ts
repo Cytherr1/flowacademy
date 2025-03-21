@@ -267,7 +267,7 @@ export async function saveProjectRows({
 }
 interface DeleteRowProps {
   workspaceID: number;
-  activityNo: number; // Single row identifier
+  activityNo: number;
 }
 
 export async function deleteRow({
