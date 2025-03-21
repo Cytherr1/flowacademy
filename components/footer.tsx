@@ -1,6 +1,7 @@
 "use client";
 import { footData, navData } from "@/lib/data";
 import { Anchor, Button, Divider, Grid, Group, Paper, Stack, Text, Title } from "@mantine/core";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 
 export default function Footer(props : any) {
@@ -41,7 +42,7 @@ export default function Footer(props : any) {
                 {
                   footData.map((e, i) => <Anchor key={i} component={Link} href={e.link} underline="hover">{e.name}</Anchor>)
                 }
-                <Button variant="default">Sign out</Button>
+                <Button variant="default" onClick={ async () => { await signOut() }}>Sign out</Button>
               </Stack>
               :
               <Stack>
@@ -49,7 +50,7 @@ export default function Footer(props : any) {
                 <Button variant="default" component={Link} href="/signin">Sign In</Button>
                 <Group justify="center" mt="md">
                   <Text size="sm">Don't have an account?</Text> 
-                  <Anchor size="sm" component={Link} href="/register">Sign up</Anchor>
+                  <Anchor size="sm" component={Link} href="/signup">Sign up</Anchor>
                 </Group>
               </Stack>
             }

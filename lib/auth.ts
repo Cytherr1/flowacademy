@@ -6,6 +6,7 @@ import Google from "next-auth/providers/google"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import db from "./db"
 import { loginSchema } from "./schema";
+import { compare } from "bcrypt-ts";
 
 const adapter = PrismaAdapter(db);
 
@@ -25,10 +26,11 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         const user = await db.user.findFirst({
           where: {
             email: validatedCredentials.email,
-            password: validatedCredentials.password
           }
         })
-        if(!user) {
+        const isPassValid = await compare(validatedCredentials.password, user?.password as string)
+
+        if(!user || !isPassValid) {
           throw new Error("Invalid credentials")
         }
 

@@ -111,7 +111,7 @@ export function Hero() {
             <Button w="100%" variant="default" component={Link} href="/signin">
               Sign In
             </Button>
-            <Button w="100%" variant="default" component={Link} href="/register">
+            <Button w="100%" variant="default" component={Link} href="/signup">
               Register
             </Button>
           </Stack>

@@ -2,18 +2,20 @@
 import { zodResolver } from 'mantine-form-zod-resolver';
 import { useForm } from '@mantine/form';
 import { Button, Group, Paper, PasswordInput, Stack, TextInput } from '@mantine/core';
-import { userLogin } from '@/lib/actions/auth';
-import { loginSchema } from '@/lib/schema';
+import { register } from '@/lib/actions/auth';
+import { signUpSchema } from '@/lib/schema';
 
-export default function SignInForm() {
+export default function SignUpForm() {
   
   const form = useForm({
     mode: 'uncontrolled',
     initialValues: {
+      username: "",
       email: "",
-      password: ""
+      password: "",
+      confirmPassword: ""
     },
-    validate: zodResolver(loginSchema),
+    validate: zodResolver(signUpSchema),
     onSubmitPreventDefault: 'validation-failed',
   });
 
@@ -22,7 +24,7 @@ export default function SignInForm() {
       action={ async (formData: FormData) => {
         form.validate()
         if(form.isValid()) {
-          await userLogin(formData);
+          await register(formData);
         }
     }}>
       <Paper
@@ -32,9 +34,14 @@ export default function SignInForm() {
         w={350}
       >
         <TextInput
+          label="Username"
+          name='username'
+          key={form.key("username")}
+          {...form.getInputProps('username')}
+        />
+        <TextInput
           label="Email"
           name='email'
-          placeholder="flowacademy@email.com"
           key={form.key("email")}
           {...form.getInputProps('email')}
         />
@@ -44,8 +51,14 @@ export default function SignInForm() {
           key={form.key("password")}
           {...form.getInputProps('password')}
         />
+        <PasswordInput
+          label="Confirm password"
+          name='confirmPassword'
+          key={form.key("confirmPassword")}
+          {...form.getInputProps('confirmPassword')}
+        />
         <Group justify="flex-end" mt="md">
-          <Button variant="default" type="submit">Sign in</Button>
+          <Button variant="default" type="submit">Sign up</Button>
         </Group>
       </Paper>
     </form>

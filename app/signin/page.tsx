@@ -14,13 +14,13 @@ export default function Home() {
         align="center"
       >
         <SignInForm/>
-        <Divider w={200} my="xs" label="Or" labelPosition="center" />
+        <Divider mt="lg" w={200} my="xs" label="Or" labelPosition="center" />
         <Button w={220} justify="center" leftSection={<IconBrandGoogleFilled size={14}/>} variant="default" mt="md">
           Sign in with Google
         </Button>
         <Group justify="center" mt="md">
           <Text>Don't have an account?</Text> 
-          <Anchor component={Link} href="/register">Sign up</Anchor>
+          <Anchor component={Link} href="/signup">Sign up</Anchor>
         </Group>
       </Stack>
     </Page>
