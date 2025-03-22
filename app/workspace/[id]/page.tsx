@@ -7,12 +7,13 @@ import {
 } from "@/lib/actions/projectActions";
 
 export default async function ProjectPage({
-  params: { id },
+  params,
 }: {
   params: {
     id: number;
   };
 }) {
+  const { id } = await params;
   const video = await fetchVideo(id);
   const workspaceName = await fetchWorkspaceName(id);
   const rows = await fetchProjectRows(id);
