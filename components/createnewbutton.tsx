@@ -80,15 +80,12 @@ export default function CreateNewButton() {
     const formData = new FormData();
     formData.append("file", form.values.file);
     
-    // Generate a unique videoID using timestamp and random string
     const timestamp = Date.now();
     const randomStr = Math.random().toString(36).substring(2, 8);
     const videoID = `video_${timestamp}_${randomStr}`;
     
-    // Add videoID to FormData
     formData.append("videoID", videoID);
     
-    // Get the current user ID from the session
     try {
       const userResponse = await fetch('/api/user/current');
       if (userResponse.ok) {
@@ -123,7 +120,6 @@ export default function CreateNewButton() {
             type: "success",
           });
           form.setFieldValue("file", null);
-          // Store the videoID for later use when creating the project
           form.setFieldValue("videoID", response.videoID);
         } else {
           setMessage({
@@ -164,16 +160,6 @@ export default function CreateNewButton() {
         withCloseButton={false}
         size="lg"
       >
-        {message && message.text && (
-          <Alert 
-            color={message.type === "success" ? "green" : "red"} 
-            withCloseButton 
-            onClose={() => setMessage({text: "", type: null})}
-            mb="md"
-          >
-            {message.text}
-          </Alert>
-        )}
         <form
           action={async (formData: FormData) => {
             form.validate();
@@ -192,8 +178,7 @@ export default function CreateNewButton() {
               if (fileUrl) {
                 formData.append("fileUrl", fileUrl);
               }
-              
-              // Make sure videoID is a string
+            
               if (form.values.videoID) {
                 formData.append("videoID", form.values.videoID.toString());
               }
@@ -249,7 +234,7 @@ export default function CreateNewButton() {
             >
               <Group mt="xs">
                 <Radio value="upload" label="Upload" />
-                <Radio value="outsource" label="Outsource" />
+                <Radio value="outsource" label="Youtube" />
               </Group>
             </Radio.Group>
           )}
@@ -295,7 +280,7 @@ export default function CreateNewButton() {
           {form.values.withVideo && form.values.videoType === "outsource" && (
             <TextInput
               label="Outsource Link"
-              placeholder="Enter video link"
+              placeholder="https://www.youtube.com/..."
               {...form.getInputProps("outsourceLink")}
               required
               mb="md"

@@ -27,6 +27,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import EditButton from "./editbutton";
 
 interface WorkspaceItem {
   id: number;
@@ -34,6 +35,11 @@ interface WorkspaceItem {
   description: string;
   userId: string;
   created_at: Date;
+  withVideo?: boolean;
+  videoType?: string;
+  outsourceLink?: string;
+  fileUrl?: string;
+  videoID?: string;
 }
 
 interface DeleteWorkspaceProps {
@@ -44,6 +50,10 @@ export default function Workspace({ workspaces }: DeleteWorkspaceProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [workspaceToDelete, setWorkspaceToDelete] =
     useState<WorkspaceItem | null>(null);
+  const [workspaceToEdit, setWorkspaceToEdit] = useState<WorkspaceItem | null>(
+    null
+  );
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [message, setMessage] = useState<{
     text: string;
     type: "success" | "error";
@@ -53,6 +63,11 @@ export default function Workspace({ workspaces }: DeleteWorkspaceProps) {
   const handleDelete = (workspace: WorkspaceItem) => {
     setWorkspaceToDelete(workspace);
     setDeleteModalOpen(true);
+  };
+
+  const handleEdit = (workspace: WorkspaceItem) => {
+    setWorkspaceToEdit(workspace);
+    setEditModalOpen(true);
   };
 
   const handleConfirmDelete = async () => {
@@ -90,13 +105,14 @@ export default function Workspace({ workspaces }: DeleteWorkspaceProps) {
             <IconPointerFilled />
           </ActionIcon>
         </Link>
-      </TableTd>
-      <TableTd>
-        <ActionIcon variant="default" size="input-sm" color="blue">
+        <ActionIcon
+          variant="default"
+          size="input-sm"
+          color="blue"
+          onClick={() => handleEdit(element)}
+        >
           <IconEdit />
         </ActionIcon>
-      </TableTd>
-      <TableTd>
         <ActionIcon
           variant="light"
           size="input-sm"
@@ -111,7 +127,7 @@ export default function Workspace({ workspaces }: DeleteWorkspaceProps) {
 
   return (
     <Center miw="100%" mah="100%">
-      <Stack align="flex-start" w="90%">
+      <Stack align="flex-end" w="90%">
         <CreateNewButton />
         {message && (
           <Alert
@@ -123,14 +139,12 @@ export default function Workspace({ workspaces }: DeleteWorkspaceProps) {
           </Alert>
         )}
 
-        <Table horizontalSpacing="xl">
+        <Table align="right" horizontalSpacing="xl">
           <TableThead>
             <TableTr>
               <TableTh>Project Name</TableTh>
               <TableTh>Project Description</TableTh>
-              <TableTh>Go To Workspace</TableTh>
-              <TableTh>Edit</TableTh>
-              <TableTh>Delete</TableTh>
+              <TableTh>Actions</TableTh>
             </TableTr>
           </TableThead>
           <TableTbody>{rows}</TableTbody>
@@ -138,9 +152,11 @@ export default function Workspace({ workspaces }: DeleteWorkspaceProps) {
 
         <Modal
           centered
+          withCloseButton={false}
+          size="lg"
           opened={deleteModalOpen}
           onClose={() => setDeleteModalOpen(false)}
-          title="Confirm Deletion"
+          title="Delete"
         >
           <Text>
             Are you sure you want to delete{" "}
@@ -157,6 +173,16 @@ export default function Workspace({ workspaces }: DeleteWorkspaceProps) {
               Cancel
             </Button>
           </Group>
+        </Modal>
+        <Modal
+          centered
+          withCloseButton={false}
+          size="lg"
+          opened={editModalOpen}
+          onClose={() => setEditModalOpen(false)}
+          title="Edit"
+        >
+          <EditButton workspace={workspaceToEdit}></EditButton>
         </Modal>
       </Stack>
     </Center>

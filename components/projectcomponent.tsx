@@ -33,15 +33,16 @@ import {
 } from "@tabler/icons-react";
 import { deleteRow, saveProjectRows } from "@/lib/actions/projectActions";
 import { useDisclosure } from "@mantine/hooks";
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 import autoTable from "jspdf-autotable";
 
 interface ProjectComponentProps {
   id: number;
-  video: string | undefined;
+  video: string | null | undefined;
   workspaceName: string | undefined;
   rows: Rows[];
+  is_outsource: boolean | undefined;
 }
 
 type Rows = {
@@ -58,6 +59,7 @@ export default function ProjectComponent({
   video,
   workspaceName,
   rows: initialRows,
+  is_outsource,
 }: ProjectComponentProps) {
   const iconMapping = [
     { outlined: IconCircle, filled: IconCircleFilled },
@@ -202,36 +204,38 @@ export default function ProjectComponent({
     setGeneratingPdf(true);
     try {
       const doc = new jsPDF();
-      
+
       doc.setFontSize(18);
       doc.text(workspaceName || "Project Activities", 14, 20);
       doc.setFontSize(12);
-      
+
       const getSymbolText = (symbolIndex: number | null) => {
-        if (symbolIndex === null) return '';
-        const symbols = ['Circle', 'Square', 'Arrow', 'D Shape', 'Triangle'];
-        return symbols[symbolIndex] || '';
+        if (symbolIndex === null) return "";
+        const symbols = ["Circle", "Square", "Arrow", "D Shape", "Triangle"];
+        return symbols[symbolIndex] || "";
       };
-      
-      const tableData = activities.map(act => [
+
+      const tableData = activities.map((act) => [
         act.activityNo.toString(),
         act.activityName,
         act.distance.toString(),
         act.time.toString(),
         getSymbolText(act.symbolIndex),
-        act.remarks || ''
+        act.remarks || "",
       ]);
-      
+
       autoTable(doc, {
-        head: [['No.', 'Activity', 'Distance (m)', 'Time (m)', 'Symbol', 'Remarks']],
+        head: [
+          ["No.", "Activity", "Distance (m)", "Time (m)", "Symbol", "Remarks"],
+        ],
         body: tableData,
         startY: 30,
-        theme: 'grid',
+        theme: "grid",
         styles: { fontSize: 10 },
-        headStyles: { fillColor: [66, 139, 202] }
+        headStyles: { fillColor: [66, 139, 202] },
       });
-      
-      const pdfBlob = doc.output('blob');
+
+      const pdfBlob = doc.output("blob");
       const url = URL.createObjectURL(pdfBlob);
       setPdfUrl(url);
       open();
@@ -332,6 +336,23 @@ export default function ProjectComponent({
           </AspectRatio>
         )}
 
+        {video && is_outsource === true && (
+          <AspectRatio
+            style={{
+              boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+              borderRadius: "8px",
+              overflow: "hidden",
+            }}
+          >
+            <iframe
+              title="Embedded video"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              src={video}
+              style={{ border: 0, width: "100%", height: "100%" }}
+            />
+          </AspectRatio>
+        )}
+
         {saveStatus && (
           <Notification
             title={saveStatus.success ? "Success" : "Error"}
@@ -355,10 +376,10 @@ export default function ProjectComponent({
           title="Project Activities PDF"
         >
           {pdfUrl && (
-            <AspectRatio ratio={1/1.4} h={600}>
+            <AspectRatio ratio={1 / 1.4} h={600}>
               <iframe
                 src={pdfUrl}
-                style={{ width: '100%', height: '100%', border: 'none' }}
+                style={{ width: "100%", height: "100%", border: "none" }}
                 title="Activities PDF"
               />
             </AspectRatio>

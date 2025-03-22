@@ -22,11 +22,12 @@ model Workspace {
 }
 
 model Video {
-  id          Int       @id @default(autoincrement())
-  workspaceId Int       @unique
-  file_path   String    @db.VarChar(255)
-  upload_time DateTime  @default(now()) @db.Timestamp(0)
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  id           Int       @id @default(autoincrement())
+  workspaceId  Int       @unique
+  file_path    String    @db.VarChar(255)
+  upload_time  DateTime  @default(now()) @db.Timestamp(0)
+  workspace    Workspace @relation(fields: [workspaceId], references: [id])
+  is_outsource Boolean   @default(false)
 }
 
 model Report {
@@ -119,17 +120,17 @@ model Authenticator {
 }
 
 model Rows {
-  id            Int       @id @default(autoincrement())
-  workspaceId   Int
-  activityNo    Int
-  activityName  String    @db.VarChar(255)
-  distance      Float     @default(0)
-  time          Float     @default(0)
-  symbolIndex   Int?
-  remarks       String?   @db.VarChar(255)
-  createdAt     DateTime  @default(now()) @db.Timestamp(0)
-  updatedAt     DateTime  @updatedAt
-  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  
+  id           Int       @id @default(autoincrement())
+  workspaceId  Int
+  activityNo   Int
+  activityName String    @db.VarChar(255)
+  distance     Float     @default(0)
+  time         Float     @default(0)
+  symbolIndex  Int?
+  remarks      String?   @db.VarChar(255)
+  createdAt    DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt    DateTime  @updatedAt
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
   @@index([workspaceId])
 }

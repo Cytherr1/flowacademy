@@ -10,11 +10,11 @@ export const config = {
   },
 };
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<Response> {
   const nodeReq = await createNodeRequest(request);
   const form = new IncomingForm();
 
-  return new Promise((resolve) => {
+  return new Promise<Response>((resolve) => {
     form.parse(nodeReq, async (err, fields, files) => {
       if (err) {
         const errorResponse = handleError(
@@ -95,20 +95,34 @@ export async function POST(request: Request) {
         const apiKey = process.env.BUNNY_API_KEY;
         const uploadUrl = `${process.env.BUNNY_HOSTNAME}${storageZoneName}/${structuredVideoID}.${fileExtension}`;
 
-        await axios.put(uploadUrl, fileStream, {
+        axios.put(uploadUrl, fileStream, {
           headers: {
             AccessKey: apiKey,
             "Content-Type": file.mimetype || "application/octet-stream",
           },
+        })
+        .then(() => {
+          resolve(
+            Response.json({
+              url: `${process.env.BUNNY_PULL_ZONE}${structuredVideoID}.${fileExtension}`,
+              videoID: structuredVideoID,
+              originalVideoID: videoID // Keep the original for reference
+            })
+          );
+        })
+        .catch((error) => {
+          const errorResponse = handleError(
+            error,
+            "File upload to Bunny CDN failed"
+          );
+          
+          resolve(
+            Response.json(
+              { error: errorResponse.message },
+              { status: 500 }
+            )
+          );
         });
-
-        return resolve(
-          Response.json({
-            url: `${process.env.BUNNY_PULL_ZONE}${structuredVideoID}.${fileExtension}`,
-            videoID: structuredVideoID,
-            originalVideoID: videoID // Keep the original for reference
-          })
-        );
       } catch (error) {
         const errorResponse = handleError(
           error,

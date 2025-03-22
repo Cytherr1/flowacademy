@@ -22,6 +22,11 @@ type Rows = {
   symbolIndex: number | null;
 };
 
+interface DeleteRowProps {
+  workspaceID: number;
+  activityNo: number;
+}
+
 export async function createProjectWithoutFile(
   formData: FormData
 ): Promise<CreateProjectResult> {
@@ -91,7 +96,8 @@ export async function createProjectWithoutFile(
       const workspaceId = results[0].id;
 
       if (withVideo) {
-        const filePath = videoType === "upload" ? fileUrl : outsourceLink;
+        const filePath =
+          videoType === "upload" ? fileUrl : await urlToEmbed(outsourceLink);
         await db.$queryRaw`
           INSERT INTO Video (workspaceId, file_path, upload_time)
           VALUES (${workspaceId}, ${filePath}, NOW())
@@ -104,7 +110,7 @@ export async function createProjectWithoutFile(
         }
       }
 
-      const targetUrl = `/workspace1/${workspaceId}`;
+      const targetUrl = `/workspace/${workspaceId}`;
       return { success: true, targetUrl };
     } catch (dbError) {
       const errorMessage =
@@ -265,38 +271,90 @@ export async function saveProjectRows({
     throw new Error(err.message || "Failed to save project rows");
   }
 }
-interface DeleteRowProps {
-  workspaceID: number;
-  activityNo: number;
-}
 
-export async function deleteRow({
-  workspaceID,
-  activityNo,
-}: DeleteRowProps) {
+export async function deleteRow({ workspaceID, activityNo }: DeleteRowProps) {
   try {
     if (!workspaceID || activityNo === undefined) {
       throw new Error("Missing workspaceID or activityNo");
     }
-    
+
     const parsedWorkspaceID =
       typeof workspaceID === "string" ? parseInt(workspaceID, 10) : workspaceID;
-      
+
     if (isNaN(parsedWorkspaceID)) {
       throw new Error("Invalid workspaceID format");
     }
-    
+
     await db.rows.deleteMany({
       where: {
         workspaceId: parsedWorkspaceID,
-        activityNo: activityNo
+        activityNo: activityNo,
       },
     });
-    
+
     return { success: true };
   } catch (error: unknown) {
     const err = error as Error;
     console.log("Error deleting row:", err.message);
     throw new Error(err.message || "Failed to delete row");
+  }
+}
+
+export async function isOutsource(workspaceID: number | string) {
+  try {
+    if (!workspaceID === undefined) {
+      throw new Error("Missing workspaceID");
+    }
+
+    const parsedWorkspaceID =
+      typeof workspaceID === "string" ? parseInt(workspaceID, 10) : workspaceID;
+
+    if (isNaN(parsedWorkspaceID)) {
+      throw new Error("Invalid workspaceID format");
+    }
+
+    const is_outsource = await db.video.findFirst({
+      where: {
+        workspaceId: parsedWorkspaceID,
+      },
+      select: {
+        id: false,
+        workspaceId: false,
+        file_path: false,
+        upload_time: false,
+        workspace: false,
+        is_outsource: true,
+      },
+    });
+
+    return is_outsource?.is_outsource;
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log("Error fetching is_outsource:", err.message);
+    throw new Error(err.message || "Failed to fetch is_outsource");
+  }
+}
+
+export async function urlToEmbed(
+  outsourceLink: string | undefined
+): Promise<string> {
+  try {
+    if (!outsourceLink) {
+      throw new Error("Missing outsourceLink");
+    }
+
+    const regExp =
+      /^.*(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|watch\?.*?&v=)([^#&?]{11}).*/;
+    const match = outsourceLink.match(regExp);
+    if (!match) {
+      throw new Error("Invalid YouTube URL format");
+    }
+    const videoID = match[1];
+
+    return `https://www.youtube.com/embed/${videoID}`;
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error("Error converting URL to embed format:", err.message);
+    throw new Error(err.message || "Failed to convert URL to embed");
   }
 }

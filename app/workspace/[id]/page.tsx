@@ -4,6 +4,8 @@ import {
   fetchProjectRows,
   fetchVideo,
   fetchWorkspaceName,
+  isOutsource,
+  urlToEmbed,
 } from "@/lib/actions/projectActions";
 
 export default async function ProjectPage({
@@ -14,9 +16,10 @@ export default async function ProjectPage({
   };
 }) {
   const { id } = await params;
-  const video = await fetchVideo(id);
   const workspaceName = await fetchWorkspaceName(id);
   const rows = await fetchProjectRows(id);
+  const is_outsource = await isOutsource(id);
+  const video = await fetchVideo(id);
 
   return (
     <Page>
@@ -25,6 +28,7 @@ export default async function ProjectPage({
         video={video}
         workspaceName={workspaceName}
         rows={rows}
+        is_outsource={is_outsource}
       ></ProjectComponent>
     </Page>
   );
