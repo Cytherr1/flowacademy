@@ -1,67 +1,79 @@
 "use client";
-import { zodResolver } from 'mantine-form-zod-resolver';
-import { useForm } from '@mantine/form';
-import { Button, Group, Paper, PasswordInput, Stack, TextInput } from '@mantine/core';
-import { editProfile } from '@/lib/schema';
-import { editUser } from '@/lib/actions/user';
+import { zodResolver } from "mantine-form-zod-resolver";
+import { useForm } from "@mantine/form";
+import {
+  Button,
+  Group,
+  Paper,
+  PasswordInput,
+  Stack,
+  TextInput,
+} from "@mantine/core";
+import { editProfile } from "@/lib/schema";
+import { editUser } from "@/lib/actions/user";
+import { Session } from "next-auth";
 
-export default function EditProfileForm(props : any) {
-  
+interface EditProfileProps {
+  name: string | null | undefined;
+  username: string | null | undefined;
+  image: string | null | undefined;
+  session: Session;
+}
+
+export default function EditProfileForm({name, username, image, session} : EditProfileProps) {
   const form = useForm({
-    mode: 'uncontrolled',
+    mode: "uncontrolled",
     initialValues: {
-      name: props.session.user?.name ?? "",
-      username: props.session.user?.username ?? "",
-      image: props.session.user?.image ?? "",
+      name: name ?? "",
+      username: username ?? "",
+      image: image ?? "",
       password: "",
-      confirmPassword: ""
+      confirmPassword: "",
     },
     validate: zodResolver(editProfile),
-    onSubmitPreventDefault: 'validation-failed',
+    onSubmitPreventDefault: "validation-failed",
   });
 
   return (
-    <form 
-      action={ async (formData: FormData) => {
-        form.validate()
-        if(form.isValid()) {
-          await editUser(formData, props.session);
+    <form
+      action={async (formData: FormData) => {
+        form.validate();
+        if (form.isValid()) {
+          await editUser(formData, session);
         }
-    }}>
-      <Paper
-        withBorder
-        component={Stack}
-        p="md"
-        w={350}
-      >
+      }}
+    >
+      <Paper withBorder component={Stack} p="md" w={350}>
         <TextInput
           label="Name"
-          name='name'
+          name="name"
           key={form.key("name")}
-          {...form.getInputProps('name')}
+          {...form.getInputProps("name")}
         />
         <TextInput
           label="Username"
-          name='username'
+          name="username"
           key={form.key("username")}
-          {...form.getInputProps('username')}
+          {...form.getInputProps("username")}
         />
         <PasswordInput
           label="Password"
-          name='password'
+          name="password"
           key={form.key("password")}
-          {...form.getInputProps('password')}
+          {...form.getInputProps("password")}
         />
         <PasswordInput
           label="Confirm password"
-          name='confirmPassword'
+          name="confirmPassword"
           key={form.key("confirmPassword")}
-          {...form.getInputProps('confirmPassword')}
+          {...form.getInputProps("confirmPassword")}
         />
         <Group justify="flex-end" mt="md">
-          <Button variant="default" type="submit">Confirm changes</Button>
+          <Button variant="default" type="submit">
+            Confirm changes
+          </Button>
         </Group>
       </Paper>
     </form>
-  )
+  );
 }

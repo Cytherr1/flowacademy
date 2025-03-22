@@ -10,9 +10,11 @@ export default async function createNodeRequest(request: Request): Promise<Incom
   });
   const buffer = Buffer.from(await request.arrayBuffer());
   const stream = Readable.from(buffer);
-  const nodeReq = stream as any;
-  nodeReq.headers = headers;
-  nodeReq.method = request.method;
-  nodeReq.url = request.url;
+  const nodeReq = Object.assign(stream, {
+    headers,
+    method: request.method,
+    url: request.url
+  }) as Readable & Pick<IncomingMessage, 'headers' | 'method' | 'url'>;
+  
   return nodeReq as IncomingMessage;
 }

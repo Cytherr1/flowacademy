@@ -19,7 +19,7 @@ export default function Home() {
           Sign in with Google
         </Button>
         <Group justify="center" mt="md">
-          <Text>Don't have an account?</Text> 
+          <Text>Don&apos;t have an account?</Text> 
           <Anchor component={Link} href="/signup">Sign up</Anchor>
         </Group>
       </Stack>

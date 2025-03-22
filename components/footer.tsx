@@ -49,7 +49,7 @@ export default function Footer(props : any) {
                 <Title order={5}>Get started with FlowAcademy</Title>
                 <Button variant="default" component={Link} href="/signin">Sign In</Button>
                 <Group justify="center" mt="md">
-                  <Text size="sm">Don't have an account?</Text> 
+                  <Text size="sm">Don&apos;t have an account?</Text> 
                   <Anchor size="sm" component={Link} href="/signup">Sign up</Anchor>
                 </Group>
               </Stack>

@@ -28,7 +28,6 @@ export const useCurrentSession = () => {
 
   useEffect(() => {
     retrieveSession();
-
   }, [retrieveSession, pathName]);
 
   return { session, status };

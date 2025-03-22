@@ -6,14 +6,19 @@ import { redirect } from "next/navigation";
 
 export default async function page() {
   const session = await auth();
-  if(!session) redirect("/signin");
+  if (!session) redirect("/signin");
 
   return (
-	  <Page>
+    <Page>
       <Stack w="100%" align="center" justify="center">
-        <Avatar size="xl" radius="xl" src={ session.user?.image ?? "" }/>
-        <EditProfileForm session={session}/>
+        <Avatar size="xl" radius="xl" src={session.user?.image ?? ""} />
+        <EditProfileForm
+          name={session.user.name}
+          username={session.user.username}
+          session={session}
+          image={session.user.image}
+        />
       </Stack>
     </Page>
-  )
+  );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   Center,
@@ -29,7 +29,6 @@ import {
   IconCheck,
   IconX,
   IconTrash,
-  IconPdf,
   IconClipboardTextFilled,
 } from "@tabler/icons-react";
 import { deleteRow, saveProjectRows } from "@/lib/actions/projectActions";
@@ -191,11 +190,11 @@ export default function ProjectComponent({
           error instanceof Error ? error.message : "Failed to delete row",
       });
     } finally {
-      setDeleting(false);
-
-      setTimeout(() => {
-        setDeleteStatus(null);
-      }, 3000);
+      if (deleteStatus) {
+        setTimeout(() => {
+          setSaveStatus(null);
+        }, 3000);
+      }
     }
   };
 
