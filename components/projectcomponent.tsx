@@ -202,18 +202,31 @@ export default function ProjectComponent({
 
   const generatePDF = () => {
     setGeneratingPdf(true);
+
     try {
-      const doc = new jsPDF();
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
 
       doc.setFontSize(18);
-      doc.text(workspaceName || "Project Activities", 14, 20);
-      doc.setFontSize(12);
+      doc.text(workspaceName || "Process Flow Chart Analysis", 14, 20);
 
-      const getSymbolText = (symbolIndex: number | null) => {
+      const getSymbolText = (symbolIndex: number | null): string => {
         if (symbolIndex === null) return "";
-        const symbols = ["Circle", "Square", "Arrow", "D Shape", "Triangle"];
+        const symbols = [
+          "Operation",
+          "Inspection",
+          "Transportation",
+          "Delay",
+          "Storage",
+        ];
         return symbols[symbolIndex] || "";
       };
+
+      doc.setFontSize(12);
+      doc.text("1) Process Flow Chart", 14, 30);
 
       const tableData = activities.map((act) => [
         act.activityNo.toString(),
@@ -226,23 +239,163 @@ export default function ProjectComponent({
 
       autoTable(doc, {
         head: [
-          ["No.", "Activity", "Distance (m)", "Time (m)", "Symbol", "Remarks"],
+          [
+            "No.",
+            "Activity",
+            "Distance (m)",
+            "Time (min)",
+            "Symbol",
+            "Remarks",
+          ],
         ],
         body: tableData,
-        startY: 30,
+        startY: 35,
         theme: "grid",
-        styles: { fontSize: 10 },
-        headStyles: { fillColor: [66, 139, 202] },
+        styles: { fontSize: 9, cellPadding: 2 },
+        headStyles: { fillColor: [66, 139, 202], textColor: [255, 255, 255] },
+        columnStyles: {
+          0: { cellWidth: 15 },
+          1: { cellWidth: "auto" },
+          2: { cellWidth: 25, halign: "right" },
+          3: { cellWidth: 25, halign: "right" },
+          4: { cellWidth: 35 },
+          5: { cellWidth: 40 },
+        },
+        didDrawPage: (data) => {
+          doc.setFontSize(8);
+          doc.text(
+            `Page ${doc.getNumberOfPages()}`,
+            doc.internal.pageSize.getWidth() - 20,
+            doc.internal.pageSize.getHeight() - 10
+          );
+        },
       });
+
+      const metrics = calculatePFCMetrics(activities);
+      const finalY = (doc as any).lastAutoTable.finalY || 40;
+
+      if (finalY > doc.internal.pageSize.getHeight() - 60) {
+        doc.addPage();
+        doc.setFontSize(12);
+        doc.text("2) Output Analysis of PFC", 14, 20);
+        drawMetricsTable(doc, metrics, 30);
+      } else {
+        doc.setFontSize(12);
+        doc.text("2) Output Analysis of PFC", 14, finalY + 10);
+        drawMetricsTable(doc, metrics, finalY + 15);
+      }
+
+      addFooter(doc);
 
       const pdfBlob = doc.output("blob");
       const url = URL.createObjectURL(pdfBlob);
       setPdfUrl(url);
       open();
+
+      doc.save(
+        `${workspaceName || "process-flow-chart"}_${new Date()
+          .toISOString()
+          .slice(0, 10)}.pdf`
+      );
     } catch (error) {
       console.error("Error generating PDF:", error);
     } finally {
       setGeneratingPdf(false);
+    }
+  };
+
+  const calculatePFCMetrics = (activities: Rows[]): Record<string, any> => {
+    const valueAdded = activities.filter(a => a.symbolIndex === 0).length;
+    
+    const nonValueAdded = activities.filter(a => a.symbolIndex !== null && a.symbolIndex > 0 && a.symbolIndex <= 4).length;
+    
+    const totalDistance = activities.reduce((sum, act) => sum + (parseFloat(act.distance.toString()) || 0), 0);
+    const totalTime = activities.reduce((sum, act) => sum + (parseFloat(act.time.toString()) || 0), 0);
+    
+    const symbolCounts = [0, 0, 0, 0, 0];
+    activities.forEach(act => {
+      if (act.symbolIndex !== null && act.symbolIndex >= 0 && act.symbolIndex < 5) {
+        symbolCounts[act.symbolIndex]++;
+      }
+    });
+    
+    return {
+      valueAdded,
+      nonValueAdded,
+      totalActivities: activities.length,
+      valueAddedPercentage: activities.length ? (valueAdded / activities.length * 100).toFixed(2) : '0',
+      nonValueAddedPercentage: activities.length ? (nonValueAdded / activities.length * 100).toFixed(2) : '0',
+      totalDistance: totalDistance.toFixed(2),
+      totalTime: totalTime.toFixed(2),
+      operationCount: symbolCounts[0],
+      inspectionCount: symbolCounts[1],
+      transportationCount: symbolCounts[2],
+      delayCount: symbolCounts[3],
+      storageCount: symbolCounts[4]
+    };
+  };
+
+  const drawMetricsTable = (
+    doc: jsPDF,
+    metrics: Record<string, any>,
+    startY: number
+  ) => {
+    autoTable(doc, {
+      startY,
+      theme: "plain",
+      styles: { fontSize: 10, cellPadding: 3 },
+      body: [
+        ["Number of values added:", metrics.valueAdded.toString()],
+        ["Number of non-values added:", metrics.nonValueAdded.toString()],
+        [
+          "Proportion of % (value added / total):",
+          `${metrics.valueAddedPercentage}%`,
+        ],
+        [
+          "Proportion of % (non-value added / total):",
+          `${metrics.nonValueAddedPercentage}%`,
+        ],
+        ["Total distance:", `${metrics.totalDistance} m`],
+        ["Total time:", `${metrics.totalTime} min`],
+        [
+          "Total number of operation process:",
+          metrics.operationCount.toString(),
+        ],
+        [
+          "Total number of inspection process:",
+          metrics.inspectionCount.toString(),
+        ],
+        [
+          "Total number of transportation process:",
+          metrics.transportationCount.toString(),
+        ],
+        ["Total number of delay process:", metrics.delayCount.toString()],
+        [
+          "Total number of storage process:",
+          metrics.storageCount.toString(),
+        ],
+      ],
+      columnStyles: {
+        0: { fontStyle: "bold", cellWidth: 100 },
+        1: { cellWidth: "auto" },
+      },
+    });
+  };
+
+  const addFooter = (doc: jsPDF) => {
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(100);
+      const dateString = new Date().toLocaleDateString();
+      doc.text(
+        `Generated on: ${dateString} | ${
+          workspaceName || "Process Flow Chart"
+        }`,
+        14,
+        doc.internal.pageSize.getHeight() - 10
+      );
     }
   };
 
@@ -337,13 +490,7 @@ export default function ProjectComponent({
         )}
 
         {video && is_outsource === true && (
-          <AspectRatio
-            style={{
-              boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-              borderRadius: "8px",
-              overflow: "hidden",
-            }}
-          >
+          <AspectRatio>
             <iframe
               title="Embedded video"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
