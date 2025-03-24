@@ -24,3 +24,33 @@ export const editUser = async ( formData: FormData, session: Session ) => {
 		}
 	})
 }
+
+export const createUser = async ( formData: FormData ) => {
+  const salt = await genSalt(10);
+  const userUsername = await db.user.findFirst({
+    where: {
+      username: formData.get("username") as string
+    }
+  })
+  const userEmail = await db.user.findFirst({
+    where: {
+      email: formData.get("email") as string
+    }
+  })
+
+  if (!userUsername && !userEmail) {
+    await db.user.create({
+      data: {
+        username: formData.get("username") as string,
+        email: formData.get('email') as string, 
+        password: await hash(formData.get('password') as string, salt)
+      }
+    })
+  } else if (!userUsername && userEmail) {
+    throw new Error("This email already in use.")
+  } else if (userUsername && !userEmail) {
+    throw new Error("This username already in use.")
+  } else {
+    throw new Error("This email and username already in use.")
+  }
+}
