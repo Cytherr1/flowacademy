@@ -98,9 +98,10 @@ export async function createProjectWithoutFile(
       if (withVideo) {
         const filePath =
           videoType === "upload" ? fileUrl : await urlToEmbed(outsourceLink);
+        const is_outsource = videoType === "upload" ? false : true;
         await db.$queryRaw`
-          INSERT INTO Video (workspaceId, file_path, upload_time)
-          VALUES (${workspaceId}, ${filePath}, NOW())
+          INSERT INTO Video (workspaceId, file_path, upload_time, is_outsource)
+          VALUES (${workspaceId}, ${filePath}, NOW(), ${is_outsource})
         `;
 
         if (videoType === "upload" && videoID) {

@@ -1,6 +1,7 @@
 "use server";
 
 import db from "../db";
+import { decreaseQuota } from "./quotaActions";
 
 type CreateProjectResult = {
   success: boolean;
@@ -9,31 +10,31 @@ type CreateProjectResult = {
   error?: string;
 };
 
-export async function deleteWorkspace(workspaceID: number) {
+export async function deleteWorkspace(
+  workspaceID: number,
+  quotaID: number | undefined
+) {
   try {
-    if (!workspaceID) {
+    if (!workspaceID || !quotaID) {
       return {
         success: false,
-        error: "WorkspaceID is required",
+        error: "WorkspaceID and quotaID is required",
       };
     }
 
+    const video = await db.video.findFirst({
+      where: {
+        workspaceId: workspaceID,
+      },
+    });
+
     try {
-      const video = await db.video.findFirst({
-        where: {
-          workspaceId: workspaceID,
-        },
-        select: {
-          id: true,
-          file_path: true,
-        },
-      });
+      if (video?.is_outsource === false) {
+        await decreaseQuota(quotaID, workspaceID);
+        let videoIDForBunny = String(video?.id);
 
-      if (video) {
-        let videoIDForBunny = String(video.id);
-
-        if (video.file_path) {
-          const filePathParts = video.file_path.split("/");
+        if (video?.file_path) {
+          const filePathParts = video?.file_path.split("/");
           const fileNameWithExtension = filePathParts[filePathParts.length - 1];
 
           if (fileNameWithExtension) {

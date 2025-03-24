@@ -1,4 +1,4 @@
-import Workspace from "@/components/workspace"
+import Workspace from "@/components/workspace";
 import Page from "@/components/page";
 import { auth } from "@/lib/auth";
 import db from "@/lib/db";
@@ -13,9 +13,15 @@ export default async function WorkspacePage() {
     },
   });
 
+  const quota = await db.quota.findFirst({
+    where: {
+      userId: session.user.id,
+    },
+  });
+
   return (
     <Page>
-      <Workspace workspaces={workspaces}></Workspace>
+      <Workspace workspaces={workspaces} quota={quota}></Workspace>
     </Page>
   );
 }

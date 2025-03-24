@@ -305,33 +305,49 @@ export default function ProjectComponent({
   };
 
   const calculatePFCMetrics = (activities: Rows[]): Record<string, any> => {
-    const valueAdded = activities.filter(a => a.symbolIndex === 0).length;
-    
-    const nonValueAdded = activities.filter(a => a.symbolIndex !== null && a.symbolIndex > 0 && a.symbolIndex <= 4).length;
-    
-    const totalDistance = activities.reduce((sum, act) => sum + (parseFloat(act.distance.toString()) || 0), 0);
-    const totalTime = activities.reduce((sum, act) => sum + (parseFloat(act.time.toString()) || 0), 0);
-    
+    const valueAdded = activities.filter((a) => a.symbolIndex === 0).length;
+
+    const nonValueAdded = activities.filter(
+      (a) => a.symbolIndex !== null && a.symbolIndex > 0 && a.symbolIndex <= 4
+    ).length;
+
+    const totalDistance = activities.reduce(
+      (sum, act) => sum + (parseFloat(act.distance.toString()) || 0),
+      0
+    );
+    const totalTime = activities.reduce(
+      (sum, act) => sum + (parseFloat(act.time.toString()) || 0),
+      0
+    );
+
     const symbolCounts = [0, 0, 0, 0, 0];
-    activities.forEach(act => {
-      if (act.symbolIndex !== null && act.symbolIndex >= 0 && act.symbolIndex < 5) {
+    activities.forEach((act) => {
+      if (
+        act.symbolIndex !== null &&
+        act.symbolIndex >= 0 &&
+        act.symbolIndex < 5
+      ) {
         symbolCounts[act.symbolIndex]++;
       }
     });
-    
+
     return {
       valueAdded,
       nonValueAdded,
       totalActivities: activities.length,
-      valueAddedPercentage: activities.length ? (valueAdded / activities.length * 100).toFixed(2) : '0',
-      nonValueAddedPercentage: activities.length ? (nonValueAdded / activities.length * 100).toFixed(2) : '0',
+      valueAddedPercentage: activities.length
+        ? ((valueAdded / activities.length) * 100).toFixed(2)
+        : "0",
+      nonValueAddedPercentage: activities.length
+        ? ((nonValueAdded / activities.length) * 100).toFixed(2)
+        : "0",
       totalDistance: totalDistance.toFixed(2),
       totalTime: totalTime.toFixed(2),
       operationCount: symbolCounts[0],
       inspectionCount: symbolCounts[1],
       transportationCount: symbolCounts[2],
       delayCount: symbolCounts[3],
-      storageCount: symbolCounts[4]
+      storageCount: symbolCounts[4],
     };
   };
 
@@ -370,10 +386,7 @@ export default function ProjectComponent({
           metrics.transportationCount.toString(),
         ],
         ["Total number of delay process:", metrics.delayCount.toString()],
-        [
-          "Total number of storage process:",
-          metrics.storageCount.toString(),
-        ],
+        ["Total number of storage process:", metrics.storageCount.toString()],
       ],
       columnStyles: {
         0: { fontStyle: "bold", cellWidth: 100 },
@@ -479,7 +492,7 @@ export default function ProjectComponent({
         <Title mt="sm" ta="center" order={1}>
           {workspaceName?.toString()}
         </Title>
-        {video && (
+        {video && is_outsource === false && (
           <AspectRatio>
             <iframe
               src={video}

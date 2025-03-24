@@ -28,7 +28,6 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import EditButton from "./editbutton";
-
 interface WorkspaceItem {
   id: number;
   project_name: string;
@@ -42,11 +41,20 @@ interface WorkspaceItem {
   videoID?: string;
 }
 
-interface DeleteWorkspaceProps {
+type Quota = {
+  id: number;
+  userId: string;
+  videosUploaded: number;
+  maxVideosAllowed: number;
+  lastUpdated: Date;
+} | null;
+
+interface WorkspaceProps {
   workspaces: WorkspaceItem[];
+  quota: Quota;
 }
 
-export default function Workspace({ workspaces }: DeleteWorkspaceProps) {
+export default function Workspace({ workspaces, quota }: WorkspaceProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [workspaceToDelete, setWorkspaceToDelete] =
     useState<WorkspaceItem | null>(null);
@@ -65,7 +73,7 @@ export default function Workspace({ workspaces }: DeleteWorkspaceProps) {
     setDeleteModalOpen(true);
   };
 
-  const handleEdit = (workspace: WorkspaceItem) => {
+  const handleEdit = async (workspace: WorkspaceItem) => {
     setWorkspaceToEdit(workspace);
     setEditModalOpen(true);
   };
@@ -73,7 +81,11 @@ export default function Workspace({ workspaces }: DeleteWorkspaceProps) {
   const handleConfirmDelete = async () => {
     try {
       if (!workspaceToDelete) return;
-      const result = await deleteWorkspace(workspaceToDelete.id);
+      const result = await deleteWorkspace(
+        workspaceToDelete.id,
+        quota?.id
+      );
+
       if (result.success) {
         setDeleteModalOpen(false);
         setMessage({ text: "Workspace deleted successfully", type: "success" });
@@ -127,8 +139,19 @@ export default function Workspace({ workspaces }: DeleteWorkspaceProps) {
 
   return (
     <Center miw="100%" mah="100%">
-      <Stack align="flex-end" w="90%">
-        <CreateNewButton />
+      <Stack w="90%">
+        <Group justify="space-between" w="100%">
+          <Button
+            color={
+              (quota?.videosUploaded ?? 0) >= (quota?.maxVideosAllowed ?? 0)
+                ? "red"
+                : "blue"
+            }
+          >
+            Quota Remaining: {quota?.videosUploaded}/{quota?.maxVideosAllowed}
+          </Button>
+          <CreateNewButton quota={quota} />
+        </Group>
         {message && (
           <Alert
             color={message.type === "success" ? "green" : "red"}

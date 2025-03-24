@@ -19,10 +19,28 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
-import { IconCheck, IconPlus, IconUpload } from "@tabler/icons-react";
+import {
+  IconCheck,
+  IconExclamationCircle,
+  IconPlus,
+  IconUpload,
+} from "@tabler/icons-react";
 import { createProjectWithoutFile } from "@/lib/actions/projectActions";
+import { decreaseQuota, increaseQuota } from "@/lib/actions/quotaActions";
 
-export default function CreateNewButton() {
+type Quota = {
+  id: number;
+  userId: string;
+  videosUploaded: number;
+  maxVideosAllowed: number;
+  lastUpdated: Date;
+} | null;
+
+interface CreateNewButtonProps {
+  quota: Quota;
+}
+
+export default function CreateNewButton({ quota }: CreateNewButtonProps) {
   const router = useRouter();
   const [opened, { open, close }] = useDisclosure(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -72,6 +90,7 @@ export default function CreateNewButton() {
 
   const handleFileUpload = async () => {
     if (!form.values.file) return;
+    await increaseQuota(quota?.id);
 
     setIsLoading(true);
     setUploadProgress(0);
@@ -79,15 +98,15 @@ export default function CreateNewButton() {
 
     const formData = new FormData();
     formData.append("file", form.values.file);
-    
+
     const timestamp = Date.now();
     const randomStr = Math.random().toString(36).substring(2, 8);
     const videoID = `video_${timestamp}_${randomStr}`;
-    
+
     formData.append("videoID", videoID);
-    
+
     try {
-      const userResponse = await fetch('/api/user/current');
+      const userResponse = await fetch("/api/user/current");
       if (userResponse.ok) {
         const userData = await userResponse.json();
         if (userData.id) {
@@ -96,8 +115,9 @@ export default function CreateNewButton() {
       }
     } catch (error) {
       console.error("Error getting current user:", error);
+      await decreaseQuota(quota?.id, -1);
     }
-    
+
     try {
       const xhr = new XMLHttpRequest();
       xhr.open("POST", "/api/bunny/upload", true);
@@ -148,6 +168,7 @@ export default function CreateNewButton() {
         type: "error",
       });
       setIsLoading(false);
+      await decreaseQuota(quota?.id, -1);
     }
   };
 
@@ -167,18 +188,17 @@ export default function CreateNewButton() {
               return;
             }
             setMessage({ text: "", type: null });
-
             try {
               formData.append("projectName", form.values.projectName);
               formData.append("withVideo", String(form.values.withVideo));
               formData.append("videoType", form.values.videoType);
               formData.append("description", form.values.description || "");
               formData.append("outsourceLink", form.values.outsourceLink || "");
-              
+
               if (fileUrl) {
                 formData.append("fileUrl", fileUrl);
               }
-            
+
               if (form.values.videoID) {
                 formData.append("videoID", form.values.videoID.toString());
               }
@@ -219,11 +239,38 @@ export default function CreateNewButton() {
             required
             mb="md"
           />
-          <Checkbox
-            label="With Video?"
-            {...form.getInputProps("withVideo", { type: "checkbox" })}
-            mb="md"
-          />
+
+          {(quota?.videosUploaded ?? 0) >= (quota?.maxVideosAllowed ?? 0) && (
+            <Stack>
+              <Alert
+                variant="light"
+                color="red"
+                radius="xl"
+                title="No Quota Remaining!"
+                icon={<IconExclamationCircle />}
+              >
+                You need to delete at least one workspace to create a new one
+                with a video. You can still proceed without a video or a YouTube
+                link.
+              </Alert>
+              <TextInput
+                label="Outsource Link"
+                placeholder="https://www.youtube.com/..."
+                {...form.getInputProps("outsourceLink")}
+                mb="md"
+              />
+            </Stack>
+          )}
+
+          {(quota?.videosUploaded ?? 0) < (quota?.maxVideosAllowed ?? 0) && (
+            <Stack>
+              <Checkbox
+                label="With Video?"
+                {...form.getInputProps("withVideo", { type: "checkbox" })}
+                mb="md"
+              />
+            </Stack>
+          )}
 
           {form.values.withVideo && (
             <Radio.Group
@@ -248,7 +295,6 @@ export default function CreateNewButton() {
                     accept="video/*"
                     leftSection={<IconUpload size={14} />}
                     {...form.getInputProps("file")}
-                    required
                   />
                   {uploadProgress > 0 && uploadProgress < 100 && (
                     <Progress
@@ -282,7 +328,6 @@ export default function CreateNewButton() {
               label="Outsource Link"
               placeholder="https://www.youtube.com/..."
               {...form.getInputProps("outsourceLink")}
-              required
               mb="md"
             />
           )}
