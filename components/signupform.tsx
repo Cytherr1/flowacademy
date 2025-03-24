@@ -4,8 +4,14 @@ import { useForm } from '@mantine/form';
 import { Button, Group, Paper, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { register } from '@/lib/actions/auth';
 import { signUpSchema } from '@/lib/schema';
+import { useState } from 'react';
+import AlertBox from './alertbox';
 
 export default function SignUpForm() {
+  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | null }>({
+    text: '',
+    type: null,
+  });
   
   const form = useForm({
     mode: 'uncontrolled',
@@ -24,7 +30,10 @@ export default function SignUpForm() {
       action={ async (formData: FormData) => {
         form.validate()
         if(form.isValid()) {
-          await register(formData);
+          const res = await register(formData);
+          if (!res.success) {
+            setMessage({text: res.message, type: "error"})
+          }
         }
     }}>
       <Paper
@@ -33,6 +42,7 @@ export default function SignUpForm() {
         p="md"
         w={350}
       >
+        <AlertBox type={message.type} text={message.text} />
         <TextInput
           label="Username"
           name='username'

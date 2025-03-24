@@ -28,10 +28,14 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
             email: validatedCredentials.email,
           }
         })
+        if(!user) {
+          throw new Error("We cannot find an user with this email.")
+        }
+
         const isPassValid = await compare(validatedCredentials.password, user?.password as string)
 
-        if(!user || !isPassValid) {
-          throw new Error("Invalid credentials")
+        if(!isPassValid) {
+          throw new Error("Invalid credentials.")
         }
 
         const userSession = await db.session.findFirst({
