@@ -18,7 +18,6 @@ import {
   Progress,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { useDisclosure } from "@mantine/hooks";
 import {
   IconCheck,
   IconExclamationCircle,
@@ -36,23 +35,25 @@ type Quota = {
   lastUpdated: Date;
 } | null;
 
-interface CreateNewButtonProps {
+type Message = {
+  text: string;
+  type: "success" | "error" | null;
+};
+interface CreateProjectModalProps {
+  onClose: () => void;
+  onSuccess: (targetUrl: string) => void;
   quota: Quota;
 }
 
-export default function CreateNewButton({ quota }: CreateNewButtonProps) {
-  const router = useRouter();
-  const [opened, { open, close }] = useDisclosure(false);
+const CreateProjectModal = ({
+  onClose,
+  onSuccess,
+  quota,
+}: CreateProjectModalProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
-  const [message, setMessage] = useState<{
-    text: string;
-    type: "success" | "error" | null;
-  }>({
-    text: "",
-    type: null,
-  });
+  const [message, setMessage] = useState<Message>({ text: "", type: null });
 
   const form = useForm({
     initialValues: {
@@ -89,33 +90,33 @@ export default function CreateNewButton({ quota }: CreateNewButtonProps) {
   }, [form.values.withVideo]);
 
   const handleFileUpload = async () => {
-    if (!form.values.file) return;
-    await increaseQuota(quota?.id);
+    if (!form.values.file || !quota) return;
+
+    await increaseQuota(quota.id);
 
     setIsLoading(true);
     setUploadProgress(0);
     setMessage({ text: "Uploading file...", type: null });
 
-    const formData = new FormData();
-    formData.append("file", form.values.file);
+    const uploadData = new FormData();
+    uploadData.append("file", form.values.file);
 
     const timestamp = Date.now();
     const randomStr = Math.random().toString(36).substring(2, 8);
     const videoID = `video_${timestamp}_${randomStr}`;
-
-    formData.append("videoID", videoID);
+    uploadData.append("videoID", videoID);
 
     try {
       const userResponse = await fetch("/api/user/current");
       if (userResponse.ok) {
         const userData = await userResponse.json();
         if (userData.id) {
-          formData.append("userID", userData.id);
+          uploadData.append("userID", userData.id);
         }
       }
     } catch (error) {
-      console.error("Error getting current user:", error);
-      await decreaseQuota(quota?.id, -1);
+      console.error("Error fetching current user:", error);
+      await decreaseQuota(quota.id, -1);
     }
 
     try {
@@ -131,35 +132,29 @@ export default function CreateNewButton({ quota }: CreateNewButtonProps) {
         }
       };
 
-      xhr.onload = function () {
+      xhr.onload = () => {
         if (xhr.status === 200) {
           const response = JSON.parse(xhr.responseText);
           setFileUrl(response.url);
-          setMessage({
-            text: `File uploaded successfully: ${response.url}`,
-            type: "success",
-          });
+          setMessage({ text: "File uploaded successfully", type: "success" });
           form.setFieldValue("file", null);
           form.setFieldValue("videoID", response.videoID);
         } else {
           setMessage({
-            text: "Upload failed: " + xhr.statusText,
+            text: `Upload failed: ${xhr.statusText}`,
             type: "error",
           });
         }
         setIsLoading(false);
       };
 
-      xhr.onerror = function () {
-        setMessage({
-          text: "Upload failed: Network error",
-          type: "error",
-        });
+      xhr.onerror = () => {
+        setMessage({ text: "Upload failed: Network error", type: "error" });
         setIsLoading(false);
       };
 
-      xhr.send(formData);
-    } catch (error) {
+      xhr.send(uploadData);
+    } catch (error: any) {
       setMessage({
         text:
           error instanceof Error
@@ -168,111 +163,74 @@ export default function CreateNewButton({ quota }: CreateNewButtonProps) {
         type: "error",
       });
       setIsLoading(false);
-      await decreaseQuota(quota?.id, -1);
+      await decreaseQuota(quota.id, -1);
+    }
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    form.validate();
+    if (!form.isValid()) return;
+
+    setMessage({ text: "", type: null });
+    const submissionData = new FormData();
+    submissionData.append("projectName", form.values.projectName);
+    submissionData.append("withVideo", String(form.values.withVideo));
+    submissionData.append("videoType", form.values.videoType);
+    submissionData.append("description", form.values.description || "");
+    submissionData.append("outsourceLink", form.values.outsourceLink || "");
+
+    if (fileUrl) {
+      submissionData.append("fileUrl", fileUrl);
+    }
+    if (form.values.videoID) {
+      submissionData.append("videoID", form.values.videoID.toString());
+    }
+
+    try {
+      const result = await createProjectWithoutFile(submissionData);
+      if (result.success && result.targetUrl) {
+        setMessage({ text: "Project created successfully", type: "success" });
+        form.reset();
+        setFileUrl(null);
+        onSuccess(result.targetUrl);
+      } else {
+        setMessage({
+          text: result.error || "Failed to create project",
+          type: "error",
+        });
+      }
+    } catch (error: any) {
+      setMessage({
+        text:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
+        type: "error",
+      });
     }
   };
 
   return (
-    <Box>
-      <Modal
-        centered
-        opened={opened}
-        onClose={close}
-        withCloseButton={false}
-        size="lg"
-      >
-        <form
-          action={async (formData: FormData) => {
-            form.validate();
-            if (!form.isValid()) {
-              return;
-            }
-            setMessage({ text: "", type: null });
-            try {
-              formData.append("projectName", form.values.projectName);
-              formData.append("withVideo", String(form.values.withVideo));
-              formData.append("videoType", form.values.videoType);
-              formData.append("description", form.values.description || "");
-              formData.append("outsourceLink", form.values.outsourceLink || "");
-
-              if (fileUrl) {
-                formData.append("fileUrl", fileUrl);
-              }
-
-              if (form.values.videoID) {
-                formData.append("videoID", form.values.videoID.toString());
-              }
-
-              const result = await createProjectWithoutFile(formData);
-              if (result.success && result.targetUrl) {
-                setMessage({
-                  text: "Project created successfully",
-                  type: "success",
-                });
-                form.reset();
-                setFileUrl(null);
-                router.push(result.targetUrl);
-              } else {
-                setMessage({
-                  text: result.error || "Failed to create project",
-                  type: "error",
-                });
-              }
-            } catch (error) {
-              setMessage({
-                text:
-                  error instanceof Error
-                    ? error.message
-                    : "An unexpected error occurred",
-                type: "error",
-              });
-            }
-          }}
-        >
-          <Title order={2} mb="md">
-            Create New Project
-          </Title>
-          <TextInput
-            label="Project Name"
-            placeholder="Enter project name"
-            {...form.getInputProps("projectName")}
-            required
-            mb="md"
-          />
-
-          {(quota?.videosUploaded ?? 0) >= (quota?.maxVideosAllowed ?? 0) && (
-            <Stack>
-              <Alert
-                variant="light"
-                color="red"
-                radius="xl"
-                title="No Quota Remaining!"
-                icon={<IconExclamationCircle />}
-              >
-                You need to delete at least one workspace to create a new one
-                with a video. You can still proceed without a video or a YouTube
-                link.
-              </Alert>
-              <TextInput
-                label="Outsource Link"
-                placeholder="https://www.youtube.com/..."
-                {...form.getInputProps("outsourceLink")}
-                mb="md"
-              />
-            </Stack>
-          )}
-
-          {(quota?.videosUploaded ?? 0) < (quota?.maxVideosAllowed ?? 0) && (
-            <Stack>
-              <Checkbox
-                label="With Video?"
-                {...form.getInputProps("withVideo", { type: "checkbox" })}
-                mb="md"
-              />
-            </Stack>
-          )}
-
-          {form.values.withVideo && (
+    <Modal centered opened onClose={onClose} withCloseButton={false} size="lg">
+      <form onSubmit={handleSubmit}>
+        <Title order={2} mb="md">
+          Create New Project
+        </Title>
+        <TextInput
+          label="Project Name"
+          placeholder="Enter project name"
+          {...form.getInputProps("projectName")}
+          required
+          mb="md"
+        />
+        <Checkbox
+          label="With Video?"
+          {...form.getInputProps("withVideo", { type: "checkbox" })}
+          mb="md"
+        />
+        {form.values.withVideo && (
+          <>
             <Radio.Group
               label="Video Type"
               {...form.getInputProps("videoType")}
@@ -284,75 +242,227 @@ export default function CreateNewButton({ quota }: CreateNewButtonProps) {
                 <Radio value="outsource" label="Youtube" />
               </Group>
             </Radio.Group>
-          )}
-          {form.values.withVideo && form.values.videoType === "upload" && (
-            <Stack gap="md">
-              {!fileUrl ? (
-                <>
-                  <FileInput
-                    label="Select file to upload"
-                    placeholder="Click to select file"
-                    accept="video/*"
-                    leftSection={<IconUpload size={14} />}
-                    {...form.getInputProps("file")}
-                  />
-                  {uploadProgress > 0 && uploadProgress < 100 && (
-                    <Progress
-                      value={uploadProgress}
-                      size="md"
-                      radius="xl"
-                    >{`${uploadProgress}%`}</Progress>
-                  )}
-                  <Button
-                    onClick={handleFileUpload}
-                    disabled={!form.values.file || isLoading}
-                    loading={isLoading}
+
+            {form.values.videoType === "upload" && (
+              <Stack gap="md" mb="md">
+                {!fileUrl ? (
+                  <>
+                    <FileInput
+                      label="Select file to upload"
+                      placeholder="Click to select file"
+                      accept="video/*"
+                      leftSection={<IconUpload size={14} />}
+                      {...form.getInputProps("file")}
+                    />
+                    {uploadProgress > 0 && uploadProgress < 100 && (
+                      <Progress value={uploadProgress} size="md" radius="xl">
+                        {`${uploadProgress}%`}
+                      </Progress>
+                    )}
+                    <Button
+                      onClick={handleFileUpload}
+                      disabled={!form.values.file || isLoading}
+                      loading={isLoading}
+                      type="button"
+                    >
+                      Upload File
+                    </Button>
+                  </>
+                ) : (
+                  <Alert
+                    icon={<IconCheck />}
+                    title="File Uploaded"
+                    color="green"
+                    mb="md"
                   >
-                    Upload File
-                  </Button>
-                </>
-              ) : (
-                <Alert
-                  icon={<IconCheck />}
-                  title="File Uploaded"
-                  color="green"
-                  mb="md"
-                >
-                  File uploaded successfully
-                </Alert>
-              )}
-            </Stack>
-          )}
-          {form.values.withVideo && form.values.videoType === "outsource" && (
-            <TextInput
-              label="Outsource Link"
-              placeholder="https://www.youtube.com/..."
-              {...form.getInputProps("outsourceLink")}
-              mb="md"
-            />
-          )}
-          <Textarea
-            label="Project Description (Optional)"
-            placeholder="Enter description"
-            {...form.getInputProps("description")}
-            mb="md"
-          />
-          <Button
-            fullWidth
-            type="submit"
-            disabled={
-              form.values.withVideo &&
-              form.values.videoType === "upload" &&
-              !fileUrl
-            }
-          >
-            Create Project
-          </Button>
-        </form>
-      </Modal>
-      <Button rightSection={<IconPlus />} onClick={open}>
+                    File uploaded successfully
+                  </Alert>
+                )}
+              </Stack>
+            )}
+            {form.values.videoType === "outsource" && (
+              <TextInput
+                label="Outsource Link"
+                placeholder="https://www.youtube.com/..."
+                {...form.getInputProps("outsourceLink")}
+                mb="md"
+                required
+              />
+            )}
+          </>
+        )}
+        <Textarea
+          label="Project Description (Optional)"
+          placeholder="Enter description"
+          {...form.getInputProps("description")}
+          mb="md"
+        />
+        {message.text && (
+          <Alert color={message.type === "error" ? "red" : "green"} mb="md">
+            {message.text}
+          </Alert>
+        )}
+        <Button
+          fullWidth
+          type="submit"
+          disabled={
+            form.values.withVideo &&
+            form.values.videoType === "upload" &&
+            !fileUrl
+          }
+        >
+          Create Project
+        </Button>
+      </form>
+    </Modal>
+  );
+};
+interface CreateProjectWithoutQuotaModalProps {
+  onClose: () => void;
+  onSuccess: (targetUrl: string) => void;
+}
+
+const CreateProjectWithoutQuotaModal = ({
+  onClose,
+  onSuccess,
+}: CreateProjectWithoutQuotaModalProps) => {
+  const [message, setMessage] = useState<Message>({ text: "", type: null });
+  const form = useForm({
+    initialValues: {
+      projectName: "",
+      outsourceLink: "",
+      description: "",
+    },
+    validate: {
+      projectName: (value) => (value ? null : "Project name is required"),
+      outsourceLink: (value) => (value ? null : "Outsource link is required"),
+    },
+  });
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    form.validate();
+    if (!form.isValid()) return;
+
+    setMessage({ text: "", type: null });
+    const submissionData = new FormData();
+    submissionData.append("projectName", form.values.projectName);
+    submissionData.append("description", form.values.description || "");
+    submissionData.append("videoType", "outsource");
+    submissionData.append("outsourceLink", form.values.outsourceLink || "");
+    submissionData.append("withVideo", "true");
+
+    try {
+      const result = await createProjectWithoutFile(submissionData);
+      if (result.success && result.targetUrl) {
+        setMessage({ text: "Project created successfully", type: "success" });
+        form.reset();
+        onSuccess(result.targetUrl);
+      } else {
+        setMessage({
+          text: result.error || "Failed to create project",
+          type: "error",
+        });
+      }
+    } catch (error: any) {
+      setMessage({
+        text:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
+        type: "error",
+      });
+    }
+  };
+
+  return (
+    <Modal centered opened onClose={onClose} withCloseButton={false} size="lg">
+      <form onSubmit={handleSubmit}>
+        <Title order={2} mb="md">
+          Create New Project
+        </Title>
+        <Alert
+          variant="light"
+          color="red"
+          radius="xl"
+          title="No Quota Remaining!"
+          icon={<IconExclamationCircle />}
+          mb="md"
+        >
+          You need to delete at least one workspace to create a new one with a
+          video. You can still proceed with a YouTube link.
+        </Alert>
+        <TextInput
+          label="Project Name"
+          placeholder="Enter project name"
+          {...form.getInputProps("projectName")}
+          mb="md"
+          required
+        />
+        <TextInput
+          label="Outsource Link"
+          placeholder="https://www.youtube.com/..."
+          {...form.getInputProps("outsourceLink")}
+          mb="md"
+          required
+        />
+        <Textarea
+          label="Project Description (Optional)"
+          placeholder="Enter description"
+          {...form.getInputProps("description")}
+          mb="md"
+        />
+        {message.text && (
+          <Alert color={message.type === "error" ? "red" : "green"} mb="md">
+            {message.text}
+          </Alert>
+        )}
+        <Button fullWidth type="submit">
+          Create Project
+        </Button>
+      </form>
+    </Modal>
+  );
+};
+interface CreateNewButtonProps {
+  quota: Quota;
+}
+
+export default function CreateNewButton({ quota }: CreateNewButtonProps) {
+  const router = useRouter();
+  const [isProjectModalOpen, setProjectModalOpen] = useState(false);
+  const [isNoQuotaModalOpen, setNoQuotaModalOpen] = useState(false);
+
+  const handleSuccess = (targetUrl: string) => {
+    router.push(targetUrl);
+  };
+
+  const handleOpenModal = () => {
+    if (quota && quota.videosUploaded < quota.maxVideosAllowed) {
+      setProjectModalOpen(true);
+    } else {
+      setNoQuotaModalOpen(true);
+    }
+  };
+
+  return (
+    <Box>
+      <Button rightSection={<IconPlus />} onClick={handleOpenModal}>
         Create new
       </Button>
+      {isProjectModalOpen && (
+        <CreateProjectModal
+          onClose={() => setProjectModalOpen(false)}
+          onSuccess={handleSuccess}
+          quota={quota}
+        />
+      )}
+      {isNoQuotaModalOpen && (
+        <CreateProjectWithoutQuotaModal
+          onClose={() => setNoQuotaModalOpen(false)}
+          onSuccess={handleSuccess}
+        />
+      )}
     </Box>
   );
 }
