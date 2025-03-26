@@ -27,7 +27,7 @@ interface DeleteRowProps {
   activityNo: number;
 }
 
-export async function createProjectWithoutFile(
+export async function createProject(
   formData: FormData
 ): Promise<CreateProjectResult> {
   try {
@@ -43,7 +43,7 @@ export async function createProjectWithoutFile(
 
     const projectName = formData.get("projectName")?.toString() || "";
     const withVideo = formData.get("withVideo") === "true";
-    const videoType = formData.get("videoType")?.toString() || "";
+    const video_type = formData.get("video_type")?.toString() || "";
     const description =
       formData.get("description")?.toString() || "No description provided";
     const outsourceLink = formData.get("outsourceLink")?.toString() || "";
@@ -59,17 +59,17 @@ export async function createProjectWithoutFile(
     }
 
     if (withVideo) {
-      if (!videoType) {
+      if (!video_type) {
         return {
           success: false,
           targetUrl: "",
           error: "Video type is required",
         };
       }
-      if (videoType === "upload" && !fileUrl) {
+      if (video_type === "upload" && !fileUrl) {
         return { success: false, targetUrl: "", error: "File URL is required" };
       }
-      if (videoType === "outsource" && !outsourceLink) {
+      if (video_type === "outsource" && !outsourceLink) {
         return {
           success: false,
           targetUrl: "",
@@ -78,51 +78,117 @@ export async function createProjectWithoutFile(
       }
     }
 
-    try {
-      await db.$queryRaw`
-        INSERT INTO Workspace (userId, project_name, description, created_at) 
-        VALUES (${userID}, ${projectName}, ${description}, NOW())
-      `;
+    const workspace = await db.workspace.create({
+      data: {
+        userId: userID,
+        project_name: projectName,
+        description: description,
+        created_at: new Date(),
+        with_video: withVideo,
+        video_type: video_type,
+        ...(withVideo && {
+          video: withVideo
+            ? {
+                create: {
+                  file_path:
+                    video_type === "upload"
+                      ? fileUrl
+                      : await urlToEmbed(outsourceLink),
+                  upload_time: new Date(),
+                  is_outsource: video_type !== "upload",
+                },
+              }
+            : undefined,
+        }),
+      },
+    });
 
-      const idResult = await db.$queryRaw`SELECT LAST_INSERT_ID() as id`;
+    if (video_type === "upload" && videoID) {
+      console.log(
+        `Video reference: ${videoID} for workspace ID: ${workspace.id}`
+      );
+    }
 
-      type QueryResult = { id: number };
-      const results = idResult as QueryResult[];
+    const targetUrl = `/workspace/${workspace.id}`;
+    return { success: true, targetUrl };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("Project creation error:", errorMessage);
+    return {
+      success: false,
+      targetUrl: "",
+      error: errorMessage || "An unexpected error occurred",
+    };
+  }
+}
 
-      if (!results.length || !results[0].id) {
-        throw new Error("Failed to create workspace");
-      }
-
-      const workspaceId = results[0].id;
-
-      if (withVideo) {
-        const filePath =
-          videoType === "upload" ? fileUrl : await urlToEmbed(outsourceLink);
-        const is_outsource = videoType === "upload" ? false : true;
-        await db.$queryRaw`
-          INSERT INTO Video (workspaceId, file_path, upload_time, is_outsource)
-          VALUES (${workspaceId}, ${filePath}, NOW(), ${is_outsource})
-        `;
-
-        if (videoType === "upload" && videoID) {
-          console.log(
-            `Video reference: ${videoID} for workspace ID: ${workspaceId}`
-          );
-        }
-      }
-
-      const targetUrl = `/workspace/${workspaceId}`;
-      return { success: true, targetUrl };
-    } catch (dbError) {
-      const errorMessage =
-        dbError instanceof Error ? dbError.message : String(dbError);
-      console.error("Database error:", errorMessage);
+export async function createProjectWithoutQuota(
+  formData: FormData
+): Promise<CreateProjectResult> {
+  try {
+    const session = await auth();
+    const userID = session?.user?.id;
+    if (!userID) {
       return {
         success: false,
         targetUrl: "",
-        error: `Database error: ${errorMessage}`,
+        error: "User not authenticated",
       };
     }
+
+    const projectName = formData.get("projectName")?.toString() || "";
+    const withVideo = formData.get("withVideo") === "true";
+    const video_type = formData.get("video_type")?.toString() || "";
+    const description =
+      formData.get("description")?.toString() || "No description provided";
+    const outsourceLink = formData.get("outsourceLink")?.toString() || "none";
+
+    if (!projectName) {
+      return {
+        success: false,
+        targetUrl: "",
+        error: "Project name is required",
+      };
+    }
+
+    console.log("With Video:", withVideo)
+    console.log("Video Type:", video_type)
+    console.log("Outsource Link:", outsourceLink)
+
+    if (withVideo && video_type === "outsource" && !outsourceLink) {
+      return {
+        success: false,
+        targetUrl: "",
+        error: "Outsource link is required",
+      };
+    }
+
+    const workspace = await db.workspace.create({
+      data: {
+        userId: userID,
+        project_name: projectName,
+        description: description,
+        created_at: new Date(),
+        with_video: withVideo,
+        video_type: video_type,
+      },
+    });
+
+    if (withVideo && video_type === "outsource") {
+      const embedUrl = await urlToEmbed(outsourceLink);
+      
+      await db.video.create({
+        data: {
+          workspaceId: workspace.id,
+          file_path: embedUrl,
+          upload_time: new Date(),
+          is_outsource: true,
+        },
+      });
+    }
+
+    const targetUrl = `/workspace/${workspace.id}`;
+    return { success: true, targetUrl };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error("Project creation error:", errorMessage);

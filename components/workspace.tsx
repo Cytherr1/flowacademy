@@ -34,8 +34,8 @@ interface WorkspaceItem {
   description: string;
   userId: string;
   created_at: Date;
-  withVideo?: boolean;
-  videoType?: string;
+  with_video: boolean;
+  video_type?: string;
   outsourceLink?: string;
   fileUrl?: string;
   videoID?: string;
@@ -81,10 +81,7 @@ export default function Workspace({ workspaces, quota }: WorkspaceProps) {
   const handleConfirmDelete = async () => {
     try {
       if (!workspaceToDelete) return;
-      const result = await deleteWorkspace(
-        workspaceToDelete.id,
-        quota?.id
-      );
+      const result = await deleteWorkspace(workspaceToDelete.id, quota?.id);
 
       if (result.success) {
         setDeleteModalOpen(false);

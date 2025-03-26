@@ -1,6 +1,7 @@
 generator client {
   provider = "prisma-client-js"
 }
+
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
@@ -16,6 +17,9 @@ model Workspace {
   video        Video?
   user         User     @relation(fields: [userId], references: [id])
   activities   Rows[]
+  with_video   Boolean  @default(false)
+  video_type   String   
+
   @@index([userId], map: "Workspace_userId_fkey")
 }
 
@@ -33,6 +37,7 @@ model Report {
   workspaceId Int
   created_at  DateTime  @default(now()) @db.Timestamp(0)
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
   @@index([workspaceId], map: "Report_workspaceId_fkey")
 }
 
@@ -78,6 +83,7 @@ model Account {
   createdAt                DateTime @default(now())
   updatedAt                DateTime @updatedAt
   user                     User     @relation(fields: [userId], references: [id])
+
   @@unique([provider, providerAccountId])
   @@index([userId])
 }
@@ -90,6 +96,7 @@ model Session {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   user         User     @relation(fields: [userId], references: [id])
+
   @@index([userId])
 }
 
@@ -97,6 +104,7 @@ model VerificationToken {
   identifier String
   token      String
   expires    DateTime
+
   @@unique([identifier, token])
 }
 
@@ -110,6 +118,7 @@ model Authenticator {
   credentialBackedUp   Boolean
   transports           String?
   user                 User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@id([userId, credentialID])
 }
 
@@ -125,6 +134,7 @@ model Rows {
   createdAt    DateTime  @default(now()) @db.Timestamp(0)
   updatedAt    DateTime  @updatedAt
   workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
   @@index([workspaceId])
 }
 

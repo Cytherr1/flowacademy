@@ -30,8 +30,8 @@ type Workspace = {
   description: string;
   userId: string;
   created_at: Date;
-  withVideo?: boolean;
-  videoType?: string;
+  with_video?: boolean;
+  video_type?: string;
   outsourceLink?: string;
   fileUrl?: string;
   videoID?: string;
@@ -53,8 +53,8 @@ export default function EditButton({ workspace }: EditButtonProps) {
   const form = useForm({
     initialValues: {
       projectName: workspace?.project_name || "",
-      withVideo: workspace?.withVideo || false,
-      videoType: workspace?.videoType || "",
+      with_video: workspace?.with_video || false,
+      video_type: workspace?.video_type || "",
       description: workspace?.description || "",
       outsourceLink: workspace?.outsourceLink || "",
       file: null as File | null,
@@ -62,27 +62,27 @@ export default function EditButton({ workspace }: EditButtonProps) {
     },
     validate: {
       projectName: (value) => (value ? null : "Project name is required"),
-      videoType: (value, values) =>
-        values.withVideo && !value ? "Video type is required" : null,
+      video_type: (value, values) =>
+        values.with_video && !value ? "Video type is required" : null,
       outsourceLink: (value, values) =>
-        values.withVideo && values.videoType === "outsource" && !value
+        values.with_video && values.video_type === "outsource" && !value
           ? "Outsource link is required"
           : null,
       file: (value, values) =>
-        values.withVideo && values.videoType === "upload" && !fileUrl && !value
+        values.with_video && values.video_type === "upload" && !fileUrl && !value
           ? "File is required"
           : null,
     },
   });
 
   useEffect(() => {
-    if (!form.values.withVideo) {
-      form.setFieldValue("videoType", "");
+    if (!form.values.with_video) {
+      form.setFieldValue("video_type", "");
       form.setFieldValue("outsourceLink", "");
       form.setFieldValue("file", null);
       setFileUrl(null);
     }
-  }, [form.values.withVideo]);
+  }, [form.values.with_video]);
 
   const handleFileUpload = async () => {
     if (!form.values.file) return;
@@ -177,8 +177,8 @@ export default function EditButton({ workspace }: EditButtonProps) {
 
           try {
             formData.append("projectName", form.values.projectName);
-            formData.append("withVideo", String(form.values.withVideo));
-            formData.append("videoType", form.values.videoType);
+            formData.append("with_video", String(form.values.with_video));
+            formData.append("video_type", form.values.video_type);
             formData.append("description", form.values.description || "");
             formData.append("outsourceLink", form.values.outsourceLink || "");
 
@@ -190,13 +190,14 @@ export default function EditButton({ workspace }: EditButtonProps) {
               formData.append("videoID", form.values.videoID.toString());
             }
 
+            // API SHOULD BE EDITED
+
             const result = await editWorkspace(formData);
             if (result.success && result.targetUrl) {
               setMessage({
                 text: "Project edited successfully",
                 type: "success",
               });
-              console.log(result.targetUrl);
               form.reset();
               setFileUrl(null);
               router.push(result.targetUrl);
@@ -229,25 +230,25 @@ export default function EditButton({ workspace }: EditButtonProps) {
         />
         <Checkbox
           label="With Video?"
-          {...form.getInputProps("withVideo", { type: "checkbox" })}
+          {...form.getInputProps("with_video", { type: "checkbox" })}
           mb="md"
-          defaultChecked={form.values.withVideo}
+          disabled
         />
 
-        {form.values.withVideo && (
+        {form.values.with_video && (
           <Radio.Group
             label="Video Type"
-            {...form.getInputProps("videoType")}
+            {...form.getInputProps("video_type")}
             required
             mb="md"
           >
             <Group mt="xs">
-              <Radio value="upload" label="Upload" />
-              <Radio value="outsource" label="Youtube" />
+              <Radio value="upload" label="Upload" disabled/>
+              <Radio value="outsource" label="Youtube" disabled/>
             </Group>
           </Radio.Group>
         )}
-        {form.values.withVideo && form.values.videoType === "upload" && (
+        {form.values.with_video && form.values.video_type === "upload" && (
           <Stack gap="md">
             {!fileUrl ? (
               <>
@@ -286,7 +287,7 @@ export default function EditButton({ workspace }: EditButtonProps) {
             )}
           </Stack>
         )}
-        {form.values.withVideo && form.values.videoType === "outsource" && (
+        {form.values.with_video && form.values.video_type === "outsource" && (
           <TextInput
             label="Outsource Link"
             placeholder="https://www.youtube.com/..."
@@ -305,8 +306,8 @@ export default function EditButton({ workspace }: EditButtonProps) {
           fullWidth
           type="submit"
           disabled={
-            form.values.withVideo &&
-            form.values.videoType === "upload" &&
+            form.values.with_video &&
+            form.values.video_type === "upload" &&
             !fileUrl
           }
         >

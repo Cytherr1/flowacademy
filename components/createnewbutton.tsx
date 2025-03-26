@@ -24,7 +24,10 @@ import {
   IconPlus,
   IconUpload,
 } from "@tabler/icons-react";
-import { createProjectWithoutFile } from "@/lib/actions/projectActions";
+import {
+  createProject,
+  createProjectWithoutQuota,
+} from "@/lib/actions/projectActions";
 import { decreaseQuota, increaseQuota } from "@/lib/actions/quotaActions";
 
 type Quota = {
@@ -59,7 +62,7 @@ const CreateProjectModal = ({
     initialValues: {
       projectName: "",
       withVideo: false,
-      videoType: "",
+      video_type: "",
       description: "",
       outsourceLink: "",
       file: null as File | null,
@@ -67,14 +70,14 @@ const CreateProjectModal = ({
     },
     validate: {
       projectName: (value) => (value ? null : "Project name is required"),
-      videoType: (value, values) =>
+      video_type: (value, values) =>
         values.withVideo && !value ? "Video type is required" : null,
       outsourceLink: (value, values) =>
-        values.withVideo && values.videoType === "outsource" && !value
+        values.withVideo && values.video_type === "outsource" && !value
           ? "Outsource link is required"
           : null,
       file: (value, values) =>
-        values.withVideo && values.videoType === "upload" && !fileUrl && !value
+        values.withVideo && values.video_type === "upload" && !fileUrl && !value
           ? "File is required"
           : null,
     },
@@ -82,7 +85,7 @@ const CreateProjectModal = ({
 
   useEffect(() => {
     if (!form.values.withVideo) {
-      form.setFieldValue("videoType", "");
+      form.setFieldValue("video_type", "");
       form.setFieldValue("outsourceLink", "");
       form.setFieldValue("file", null);
       setFileUrl(null);
@@ -176,7 +179,7 @@ const CreateProjectModal = ({
     const submissionData = new FormData();
     submissionData.append("projectName", form.values.projectName);
     submissionData.append("withVideo", String(form.values.withVideo));
-    submissionData.append("videoType", form.values.videoType);
+    submissionData.append("video_type", form.values.video_type);
     submissionData.append("description", form.values.description || "");
     submissionData.append("outsourceLink", form.values.outsourceLink || "");
 
@@ -188,7 +191,7 @@ const CreateProjectModal = ({
     }
 
     try {
-      const result = await createProjectWithoutFile(submissionData);
+      const result = await createProject(submissionData);
       if (result.success && result.targetUrl) {
         setMessage({ text: "Project created successfully", type: "success" });
         form.reset();
@@ -233,7 +236,7 @@ const CreateProjectModal = ({
           <>
             <Radio.Group
               label="Video Type"
-              {...form.getInputProps("videoType")}
+              {...form.getInputProps("video_type")}
               required
               mb="md"
             >
@@ -243,7 +246,7 @@ const CreateProjectModal = ({
               </Group>
             </Radio.Group>
 
-            {form.values.videoType === "upload" && (
+            {form.values.video_type === "upload" && (
               <Stack gap="md" mb="md">
                 {!fileUrl ? (
                   <>
@@ -280,13 +283,12 @@ const CreateProjectModal = ({
                 )}
               </Stack>
             )}
-            {form.values.videoType === "outsource" && (
+            {form.values.video_type === "outsource" && (
               <TextInput
                 label="Outsource Link"
                 placeholder="https://www.youtube.com/..."
                 {...form.getInputProps("outsourceLink")}
                 mb="md"
-                required
               />
             )}
           </>
@@ -307,7 +309,7 @@ const CreateProjectModal = ({
           type="submit"
           disabled={
             form.values.withVideo &&
-            form.values.videoType === "upload" &&
+            form.values.video_type === "upload" &&
             !fileUrl
           }
         >
@@ -332,10 +334,10 @@ const CreateProjectWithoutQuotaModal = ({
       projectName: "",
       outsourceLink: "",
       description: "",
+      video_type: "",
     },
     validate: {
       projectName: (value) => (value ? null : "Project name is required"),
-      outsourceLink: (value) => (value ? null : "Outsource link is required"),
     },
   });
 
@@ -343,17 +345,19 @@ const CreateProjectWithoutQuotaModal = ({
     event.preventDefault();
     form.validate();
     if (!form.isValid()) return;
-
+  
     setMessage({ text: "", type: null });
     const submissionData = new FormData();
+    
+    // Correctly set form data
     submissionData.append("projectName", form.values.projectName);
     submissionData.append("description", form.values.description || "");
-    submissionData.append("videoType", "outsource");
+    submissionData.append("withVideo", form.values.outsourceLink ? "true" : "false");
+    submissionData.append("video_type", form.values.outsourceLink ? "outsource" : "");
     submissionData.append("outsourceLink", form.values.outsourceLink || "");
-    submissionData.append("withVideo", "true");
-
+  
     try {
-      const result = await createProjectWithoutFile(submissionData);
+      const result = await createProjectWithoutQuota(submissionData);
       if (result.success && result.targetUrl) {
         setMessage({ text: "Project created successfully", type: "success" });
         form.reset();
@@ -404,7 +408,6 @@ const CreateProjectWithoutQuotaModal = ({
           placeholder="https://www.youtube.com/..."
           {...form.getInputProps("outsourceLink")}
           mb="md"
-          required
         />
         <Textarea
           label="Project Description (Optional)"

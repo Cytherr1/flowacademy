@@ -41,7 +41,6 @@ export async function deleteWorkspace(
             const videoIDFromPath = fileNameWithExtension.split(".")[0];
             if (videoIDFromPath) {
               videoIDForBunny = videoIDFromPath;
-              console.log(`Extracted videoID from path: ${videoIDForBunny}`);
             }
           }
         }
@@ -59,7 +58,6 @@ export async function deleteWorkspace(
           );
 
           const result = await response.json();
-          console.log(`Bunny deletion result:`, result);
         } catch (fetchError) {
           console.error("Error deleting from Bunny CDN:", fetchError);
         }
