@@ -14,6 +14,7 @@ import {
   Notification,
   Flex,
   Modal,
+  ScrollArea,
 } from "@mantine/core";
 import {
   IconArrowBigRightLines,
@@ -30,12 +31,14 @@ import {
   IconX,
   IconTrash,
   IconClipboardTextFilled,
+  IconLetterD,
 } from "@tabler/icons-react";
 import { deleteRow, saveProjectRows } from "@/lib/actions/projectActions";
 import { useDisclosure } from "@mantine/hooks";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import autoTable from "jspdf-autotable";
+import autoTable from "jspdf-autotable"
+import { IconLetterDFilled } from "./iconLetterDFilled";
 
 interface ProjectComponentProps {
   id: number;
@@ -65,7 +68,7 @@ export default function ProjectComponent({
     { outlined: IconCircle, filled: IconCircleFilled },
     { outlined: IconSquare, filled: IconSquareFilled },
     { outlined: IconArrowBigRightLines, filled: IconArrowBigRightLinesFilled },
-    { outlined: IconCircle, filled: IconCircleFilled },
+    { outlined: IconLetterD, filled: IconLetterDFilled},
     { outlined: IconTriangleInverted, filled: IconTriangleInvertedFilled },
   ];
 
@@ -488,22 +491,28 @@ export default function ProjectComponent({
 
   return (
     <Center miw="100%" mah="100%">
-      <Stack>
+      <Stack style={{ width: "75%", height: "100%" }}>
         <Title mt="sm" ta="center" order={1}>
           {workspaceName?.toString()}
         </Title>
         {video && is_outsource === false && (
-          <AspectRatio>
+          <AspectRatio
+            ratio={16 / 9}
+            style={{ minWidth:"1000px", margin: "0 auto" }}
+          >
             <iframe
               src={video}
-              style={{ border: 0 }}
+              style={{ border: 0, width: "100%", height: "100%" }}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             />
           </AspectRatio>
         )}
 
         {video && is_outsource === true && (
-          <AspectRatio>
+          <AspectRatio
+            ratio={16 / 9}
+            style={{ minWidth:"1000px", margin: "0 auto" }}
+          >
             <iframe
               title="Embedded video"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -536,7 +545,10 @@ export default function ProjectComponent({
           title="Project Activities PDF"
         >
           {pdfUrl && (
-            <AspectRatio ratio={1 / 1.4} h={600}>
+            <AspectRatio
+              ratio={1 / 1.4}
+              style={{ width: "100%", height: "100%" }}
+            >
               <iframe
                 src={pdfUrl}
                 style={{ width: "100%", height: "100%", border: "none" }}
@@ -567,20 +579,22 @@ export default function ProjectComponent({
           </Button>
         </Flex>
 
-        <Table highlightOnHover withColumnBorders>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Activity No.</Table.Th>
-              <Table.Th>Activity</Table.Th>
-              <Table.Th>Distance (m)</Table.Th>
-              <Table.Th>Time (m)</Table.Th>
-              <Table.Th>Symbols</Table.Th>
-              <Table.Th>Remarks</Table.Th>
-              <Table.Th></Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>{tableRows}</Table.Tbody>
-        </Table>
+        <ScrollArea style={{ width: "100%" }}>
+          <Table highlightOnHover withColumnBorders style={{ width: "100%" }}>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Activity No.</Table.Th>
+                <Table.Th>Activity</Table.Th>
+                <Table.Th>Distance (m)</Table.Th>
+                <Table.Th>Time (m)</Table.Th>
+                <Table.Th>Symbols</Table.Th>
+                <Table.Th>Remarks</Table.Th>
+                <Table.Th></Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>{tableRows}</Table.Tbody>
+          </Table>
+        </ScrollArea>
         <Button onClick={addNewRow} mt="xs" mb="xl" variant="light">
           <IconPlus size={24} />
           Add Row

@@ -58,7 +58,7 @@ export function Hero() {
                 w={200}
                 variant="default"
                 component={Link}
-                href="/register"
+                href="/signup"
               >
                 Register
               </Button>

@@ -28,29 +28,47 @@ interface DataItem {
 export default function AboutComponent() {
   const isLargeScreen = useMediaQuery("(min-width: 1200px)");
 
-  const software = softwareData.map((item: DataItem) => (
+  const renderAccordionItem = (item: DataItem) => (
     <Accordion.Item value={item.id} key={item.label}>
       <Accordion.Control>
         <AccordionLabel {...item} />
       </Accordion.Control>
       <Accordion.Panel>
-        <Text size="sm">{item.content}</Text>
-        <Group mt="sm">{getSocialButtons(item)}</Group>
+        <Text
+          size="sm"
+          style={{
+            width: "100%",
+            wordWrap: "break-word",
+            overflowWrap: "break-word",
+          }}
+        >
+          {item.content}
+        </Text>
+        <Group mt="sm" style={{ width: "100%" }}>
+          {getSocialButtons(item)}
+        </Group>
       </Accordion.Panel>
     </Accordion.Item>
-  ));
+  );
 
-  const industrial = industrialData.map((item: DataItem) => (
-    <Accordion.Item value={item.id} key={item.label}>
-      <Accordion.Control>
-        <AccordionLabel {...item} />
-      </Accordion.Control>
-      <Accordion.Panel>
-        <Text size="sm">{item.content}</Text>
-        <Group mt="sm">{getSocialButtons(item)}</Group>
-      </Accordion.Panel>
-    </Accordion.Item>
-  ));
+  const software = softwareData.map(renderAccordionItem);
+  const industrial = industrialData.map(renderAccordionItem);
+
+  const accordionProps = {
+    w: "100%",
+    styles: {
+      item: {
+        width: "100%",
+        maxWidth: "100%",
+      },
+      control: {
+        width: "100%",
+      },
+      panel: {
+        width: "100%",
+      },
+    },
+  };
 
   if (isLargeScreen) {
     return (
@@ -65,7 +83,11 @@ export default function AboutComponent() {
             Click on panels for further information!
           </Text>
           <Box w="75%" mx="auto">
-            <Accordion chevronPosition="right" variant="contained">
+            <Accordion
+              chevronPosition="right"
+              variant="contained"
+              {...accordionProps}
+            >
               {software}
             </Accordion>
           </Box>
@@ -80,7 +102,11 @@ export default function AboutComponent() {
             Click on panels for further information!
           </Text>
           <Box w="75%" mx="auto">
-            <Accordion chevronPosition="right" variant="contained">
+            <Accordion
+              chevronPosition="right"
+              variant="contained"
+              {...accordionProps}
+            >
               {industrial}
             </Accordion>
           </Box>
@@ -90,38 +116,42 @@ export default function AboutComponent() {
   }
 
   return (
-    <Center miw="100%" mah="100%">
-      <Stack py="xl" px="md" style={{ maxWidth: "100%" }}>
-        <Stack align="center" w="100%">
+    <Center w="100%" mih="100%" py="xl">
+      <Stack w="100%" maw={1200} px="md" gap="xl">
+        {/* Software Engineering Section */}
+        <Stack gap="md" align="center" w="100%">
           <Title order={1} ta="center">
             Software Engineering
           </Title>
-          <Text ta="center" mb={20} c="dimmed">
+          <Text ta="center" c="dimmed" mb="md">
             Meet our software engineering team!
             <br />
             Click on panels for further information!
           </Text>
-          <Box w="100%" mx="auto">
-            <Accordion chevronPosition="right" variant="contained">
-              {software}
-            </Accordion>
-          </Box>
+          <Accordion 
+            {...accordionProps}
+            w="100%"
+          >
+            {softwareData.map(renderAccordionItem)}
+          </Accordion>
         </Stack>
 
-        <Stack align="center" w="100%" mt="xl">
+        {/* Industrial Engineering Section */}
+        <Stack gap="md" align="center" w="100%">
           <Title order={1} ta="center">
             Industrial Engineering
           </Title>
-          <Text ta="center" mb={20} c="dimmed">
+          <Text ta="center" c="dimmed" mb="md">
             Meet our industrial engineering team!
             <br />
             Click on panels for further information!
           </Text>
-          <Box w="100%" mx="auto">
-            <Accordion chevronPosition="right" variant="contained">
-              {industrial}
-            </Accordion>
-          </Box>
+          <Accordion 
+            {...accordionProps}
+            w="100%"
+          >
+            {industrialData.map(renderAccordionItem)}
+          </Accordion>
         </Stack>
       </Stack>
     </Center>

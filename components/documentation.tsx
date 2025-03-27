@@ -8,6 +8,7 @@ import {
   Image,
   Group,
   Button,
+  AspectRatio,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import NextImage from "next/image";
@@ -44,74 +45,78 @@ export default function Documentation() {
         <Button w={200} variant="default" component={Link} href="/signin">
           Sign In
         </Button>
-        <Button w={200} variant="default" component={Link} href="/register">
+        <Button w={200} variant="default" component={Link} href="/signup">
           Register
         </Button>
       </Group>
     </Box>,
     <Box key="step2" p="md">
       <Title order={1}>Upload Your Video</Title>
-      <Text c="dimmed" mt="xs">
-        Upload your video by dragging and dropping or selecting from your
-        device.
-      </Text>
-      <Text c="dimmed" mt="xs">
-        Supported formats: MP4, MOV, AVI. Maximum file size: 20 MB.
-      </Text>
-      <Image
-        h={200}
-        w="auto"
-        fit="contain"
-        component={NextImage}
-        src={placeholder}
-        alt="logo"
+      <AspectRatio
         mt="xs"
-        radius="md"
-      />
+        ratio={16 / 9}
+        style={{
+          minWidth: "750px",
+          margin: "0 auto",
+        }}
+      >
+        <video
+          autoPlay
+          loop
+          style={{ border: 0, width: "100%", height: "100%" }}
+        >
+          <source src="/upload.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      </AspectRatio>
     </Box>,
     <Box key="step3" p="md">
       <Title order={1}>Edit Your Steps</Title>
-      <Text c="dimmed" mt="xs">
-        Adjust the automatically detected steps or add your own custom steps.
-      </Text>
-      <Text c="dimmed" mt="xs">
-        You can add annotations, change timestamps, and reorder steps as needed.
-      </Text>
-      <Image
-        h={200}
-        w="auto"
-        fit="contain"
-        component={NextImage}
-        src={placeholder}
-        alt="logo"
+      <AspectRatio
         mt="xs"
-        radius="md"
-      />
+        ratio={16 / 9}
+        style={{
+          minWidth: "750px",
+          margin: "0 auto",
+        }}
+      >
+        <video
+          autoPlay
+          loop
+          style={{ border: 0, width: "100%", height: "100%" }}
+        >
+          <source src="/editsteps.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      </AspectRatio>
     </Box>,
     <Box key="step4" p="md">
       <Title order={1}>Create PDF</Title>
-      <Text c="dimmed" mt="xs">
-        Generate a PDF document with all your steps and annotations.
-      </Text>
-      <Text c="dimmed" mt="xs">
-        You can customize the layout and download or share the final document.
-      </Text>
-      <Image
-        h={200}
-        w="auto"
-        fit="contain"
-        component={NextImage}
-        src={placeholder}
-        alt="logo"
+      <AspectRatio
         mt="xs"
-        radius="md"
-      />
+        ratio={16 / 9}
+        style={{
+          minWidth: "750px",
+          margin: "0 auto",
+        }}
+      >
+        <video
+          autoPlay
+          loop
+          style={{ border: 0, width: "100%", height: "100%" }}
+        >
+          <source src="/generatepdf.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      </AspectRatio>
     </Box>,
   ];
 
   const responsiveContent = [
     <Box key="step1" p="md">
-      <Title ta="center" order={1}>Register or Sign in</Title>
+      <Title ta="center" order={1}>
+        Register or Sign in
+      </Title>
       <Text ta="center" c="dimmed" mt="xs">
         Create an account or sign in to your existing account to get started.
       </Text>
@@ -138,64 +143,53 @@ export default function Documentation() {
       </Center>
     </Box>,
     <Box key="step2" p="md">
-      <Title ta="center" order={1}>Upload Your Video</Title>
-      <Text ta="center" c="dimmed" mt="xs">
-        Upload your video by dragging and dropping or selecting from your
-        device.
-      </Text>
-      <Text ta="center" c="dimmed" mt="xs">
-        Supported formats: MP4, MOV, AVI. Maximum file size: 20 MB.
-      </Text>
-      <Center mt="xs">
-        <Image
-          h={isSmallScreen ? 150 : 200}
-          w="auto"
-          fit="contain"
-          component={NextImage}
-          src={placeholder}
-          alt="logo"
-          radius="md"
-        />
-      </Center>
+      <Title ta="center" order={1}>
+        Upload Your Video
+      </Title>
+      <AspectRatio mt="xs" style={{ minWidth: "300px", margin: "0 auto" }}>
+        <video
+          autoPlay
+          loop
+          style={{ border: 0, width: "100%", height: "100%" }}
+        >
+          <source src="/upload.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      </AspectRatio>
     </Box>,
     <Box key="step3" p="md">
-      <Title ta="center" order={1}>Edit Your Steps</Title>
-      <Text ta="center" c="dimmed" mt="xs">
-        Adjust the automatically detected steps or add your own custom steps.
-      </Text>
-      <Text ta="center" c="dimmed" mt="xs">
-        You can add annotations, change timestamps, and reorder steps as needed.
-      </Text>
+      <Title ta="center" order={1}>
+        Edit Your Steps
+      </Title>
       <Center mt="xs">
-        <Image
-          h={isSmallScreen ? 150 : 200}
-          w="auto"
-          fit="contain"
-          component={NextImage}
-          src={placeholder}
-          alt="logo"
-          radius="md"
-        />
+      <AspectRatio mt="xs" style={{ minWidth: "300px", margin: "0 auto" }}>
+        <video
+          autoPlay
+          loop
+          style={{ border: 0, width: "100%", height: "100%" }}
+        >
+          <source src="/editsteps.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      </AspectRatio>
       </Center>
     </Box>,
     <Box key="step4" p="md">
-      <Title ta="center" order={1}>Create PDF</Title>
-      <Text ta="center" c="dimmed" mt="xs">
-        Generate a PDF document with all your steps and annotations.
-      </Text>
-      <Text ta="center" c="dimmed" mt="xs">
-        You can customize the layout and download or share the final document.
-      </Text>
+      <Title ta="center" order={1}>
+        Create PDF
+      </Title>
+      
       <Center mt="xs">
-        <Image
-          h={isSmallScreen ? 150 : 200}
-          w="auto"
-          fit="contain"
-          component={NextImage}
-          src={placeholder}
-          alt="logo"
-          radius="md"
-        />
+      <AspectRatio mt="xs" style={{ minWidth: "300px", margin: "0 auto" }}>
+        <video
+          autoPlay
+          loop
+          style={{ border: 0, width: "100%", height: "100%" }}
+        >
+          <source src="/generatepdf.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      </AspectRatio>
       </Center>
     </Box>,
   ];
