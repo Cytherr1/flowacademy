@@ -13,6 +13,16 @@ export const editUser = async (formData: FormData, session: Session) => {
     },
   });
 
+  const userUsername = await db.user.findFirst({
+    where: {
+      username: formData.get("username") as string,
+    },
+  });
+
+  if (userUsername) {
+    throw new Error("This username is already in use.")
+  }
+
   await db.user.update({
     where: {
       id: user?.id,
@@ -23,7 +33,7 @@ export const editUser = async (formData: FormData, session: Session) => {
           ? (formData.get("name") as string)
           : (user?.name as string),
       username:
-        formData.get("username") !== ""
+        formData.get("username") !== "" && !userUsername
           ? (formData.get("username") as string)
           : (user?.username as string),
       image:

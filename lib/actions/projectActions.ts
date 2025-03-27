@@ -44,8 +44,7 @@ export async function createProject(
     const projectName = formData.get("projectName")?.toString() || "";
     const withVideo = formData.get("withVideo") === "true";
     const video_type = formData.get("video_type")?.toString() || "";
-    const description =
-      formData.get("description")?.toString() || "No description provided";
+    const description = formData.get("description")?.toString() || "No description provided";
     const outsourceLink = formData.get("outsourceLink")?.toString() || "";
     const fileUrl = formData.get("fileUrl")?.toString() || "";
     const videoID = formData.get("videoID")?.toString() || "";
@@ -119,6 +118,56 @@ export async function createProject(
       targetUrl: "",
       error: errorMessage || "An unexpected error occurred",
     };
+  }
+}
+
+export async function editProject(
+  formData: FormData,
+  projectId: number
+) {
+  try {
+    const session = await auth();
+    if (!session) {
+      throw new Error("User not authenticated!")
+    }
+
+    const workspace = await db.workspace.findFirst({
+      where: {
+        id: projectId
+      }
+    })
+
+    await db.workspace.update({
+      where: {
+        id: workspace?.id
+      },
+      data: {
+        userId: workspace?.userId,
+        project_name: 
+          formData.get("projectName") !== ""
+          ? (formData.get("projectName") as string)
+          : (workspace?.project_name as string),
+        description: 
+          formData.get("description") !== ""
+          ? (formData.get("description") as string)
+          : (workspace?.description as string),
+        created_at: workspace?.created_at,
+        with_video: workspace?.with_video,
+        video_type: workspace?.video_type,
+        ...(workspace?.with_video && {
+          video: {
+            update: {
+              file_path:
+                workspace?.video_type === "upload"
+                  ? (formData.get("fileUrl") as string)
+                  : await urlToEmbed(formData.get("outsourceLink") as string),
+            }
+          }
+        }),
+      },
+    });
+  } catch {
+    throw new Error("Project edit error.")
   }
 }
 

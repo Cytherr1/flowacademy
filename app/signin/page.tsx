@@ -1,10 +1,15 @@
 import Page from "@/components/page";
 import SignInForm from "@/components/signinform";
+import { auth } from "@/lib/auth";
 import { Anchor, Button, Divider, Group, Stack, Text } from "@mantine/core";
 import { IconBrandGoogleFilled } from "@tabler/icons-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
-export default function Home() {
+export default async function SignIn() {
+  const session = await auth();
+  if (session) redirect("/");
+
   return (
     <Page>
       <Stack
