@@ -1,3 +1,4 @@
+import DeleteProfileButton from "@/components/deleteprofilebutton";
 import EditProfileForm from "@/components/editprofileform";
 import Page from "@/components/page";
 import { auth } from "@/lib/auth";
@@ -10,7 +11,7 @@ export default async function page() {
 
   return (
     <Page>
-      <Stack w="100%" align="center" justify="center">
+      <Stack w="100%" align="center" justify="center" gap="lg">
         <Avatar size="xl" radius="xl" src={session.user?.image ?? ""} />
         <EditProfileForm
           name={session.user.name}
@@ -18,6 +19,7 @@ export default async function page() {
           session={session}
           image={session.user.image}
         />
+        <DeleteProfileButton session={session}/>
       </Stack>
     </Page>
   );

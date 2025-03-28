@@ -1,9 +1,10 @@
 "use server";
 
-import { Session } from "next-auth";
+import { Session, User } from "next-auth";
 import db from "../db";
 import { genSalt, hash } from "bcrypt-ts";
 import { assignQuota } from "./quotaActions";
+import { redirect } from "next/navigation";
 
 export const editUser = async (formData: FormData, session: Session) => {
   const salt = await genSalt(10);
@@ -19,7 +20,7 @@ export const editUser = async (formData: FormData, session: Session) => {
     },
   });
 
-  if (userUsername) {
+  if (userUsername?.username !== user?.username) {
     throw new Error("This username is already in use.")
   }
 
@@ -33,7 +34,7 @@ export const editUser = async (formData: FormData, session: Session) => {
           ? (formData.get("name") as string)
           : (user?.name as string),
       username:
-        formData.get("username") !== "" && !userUsername
+        formData.get("username") !== ""
           ? (formData.get("username") as string)
           : (user?.username as string),
       image:
@@ -79,3 +80,56 @@ export const createUser = async (formData: FormData) => {
     throw new Error("This email and username already in use.");
   }
 };
+
+export const deleteUser = async ( userId: string ) => {
+  
+  const workspaces = await db.workspace.findMany({
+    where: {
+      userId: userId
+    }
+  })
+
+  workspaces.map( async (workspace) => {
+    const deleteVideos = db.video.deleteMany({
+      where: {
+        workspaceId: workspace.id
+      }
+    })
+    const deleteReports = db.report.deleteMany({
+      where: {
+        workspaceId: workspace.id
+      }
+    })
+    const deleteRows = db.rows.deleteMany({
+      where: {
+        workspaceId: workspace.id
+      }
+    })
+    const deleteWorkspace = db.workspace.deleteMany({
+      where: {
+        id: workspace.id
+      }
+    })
+
+    await db.$transaction([deleteRows, deleteVideos, deleteReports, deleteWorkspace])
+  });
+
+  const deleteQuota = db.quota.deleteMany({
+    where: {
+      userId: userId
+    }
+  })
+  const deleteSession = db.session.delete({
+    where: {
+      userId: userId
+    }
+  })
+  const deleteUser = db.user.delete({
+    where: {
+      id: userId
+    }
+  })
+
+  await db.$transaction([deleteQuota, deleteSession, deleteUser])
+  redirect("/")
+}

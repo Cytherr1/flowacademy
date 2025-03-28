@@ -25,14 +25,21 @@ export default function SignInForm() {
 
   return (
     <form 
+      onSubmit={() => form.setSubmitting(true)}
       action={ async (formData: FormData) => {
         form.validate()
         if(form.isValid()) {
           const res = await userLogin(formData);
           if (!res.success) {
             setMessage({text: res.message, type: "error"})
+            setTimeout(() => setMessage({text: "", type: null}), 2500)
+          } else {
+            setMessage({text: res.message, type: "success"})
+            setTimeout(() => setMessage({text: "", type: null}), 2500)
           }
         }
+        form.setSubmitting(false);
+        form.resetDirty();
     }}>
       <Paper
         withBorder
@@ -55,7 +62,7 @@ export default function SignInForm() {
           {...form.getInputProps('password')}
         />
         <Group justify="center" mt="md">
-          <Button variant="default" type="submit" onClick={() => setMessage({text: "", type: null})}>Sign in</Button>
+          <Button variant="default" type="submit" disabled={!form.isDirty()} loading={form.submitting}>Sign in</Button>
         </Group>
       </Paper>
     </form>

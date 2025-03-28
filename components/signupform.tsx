@@ -27,14 +27,21 @@ export default function SignUpForm() {
 
   return (
     <form 
+      onSubmit={() => form.setSubmitting(true)}
       action={ async (formData: FormData) => {
         form.validate()
         if(form.isValid()) {
           const res = await register(formData);
           if (!res.success) {
             setMessage({text: res.message, type: "error"})
+            setTimeout(() => setMessage({text: "", type: null}), 2500)
+          } else {
+            setMessage({text: res.message, type: "success"})
+            setTimeout(() => setMessage({text: "", type: null}), 2500)
           }
         }
+        form.setSubmitting(false);
+        form.resetDirty();
     }}>
       <Paper
         withBorder
@@ -68,7 +75,7 @@ export default function SignUpForm() {
           {...form.getInputProps('confirmPassword')}
         />
         <Group justify="flex-end" mt="md">
-          <Button variant="default" type="submit">Sign up</Button>
+          <Button variant="default" type="submit" disabled={!form.isDirty()} loading={form.submitting}>Sign up</Button>
         </Group>
       </Paper>
     </form>
