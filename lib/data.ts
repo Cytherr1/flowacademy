@@ -49,7 +49,7 @@ export const softwareData = [
     image: "/1722501175596.jpg",
     label: "Uğur Oğuzhan Obuz",
     description: "Full-Stack Developer",
-    content: "Competitive Civ6 Player.",
+    content: "Genius, billionaire, playboy, philanthropist. I am also a Software Engineering student at Bahçeşehir University. Currently focusing on becoming a Web Developer and honing my skills in Full-Stack development. I enjoy working on my own projects to further enhance my knowledge in this field. For now, I have advanced proficiency in Python, intermediate level knowledge in JavaScript and experienced in React.",
     social1: "https://www.ugurobuz.com",
     social2: "https://https://github.com/Cytherr1",
     social3: "https://www.linkedin.com/in/ugobuz/",

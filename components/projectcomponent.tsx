@@ -200,6 +200,7 @@ export default function ProjectComponent({
           setSaveStatus(null);
         }, 3000);
       }
+      setDeleting(false);
     }
   };
 
