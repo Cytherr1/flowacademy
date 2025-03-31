@@ -192,33 +192,28 @@ export async function editProject(formData: FormData) {
       };
     }
 
-    await db.workspace.update({
+    await db.video.update({
       where: {
-        id: workspace?.id,
+        workspaceId: parsedWorkspaceID,
       },
       data: {
-        userId: workspace?.userId,
-        project_name:
-          projectName !== ""
-            ? (projectName as string)
-            : (workspace?.project_name as string),
-        description:
-          description !== ""
-            ? (description as string)
-            : (workspace?.description as string),
-        created_at: workspace?.created_at,
-        with_video: workspace?.with_video,
-        video_type: workspace?.video_type,
-        ...(workspace?.with_video && {
-          video: {
-            update: {
-              file_path:
-                workspace?.video_type === "upload"
-                  ? (fileUrl as string)
-                  : await urlToEmbed(outsourceLink as string),
-            },
-          },
-        }),
+        file_path:
+          video_type === "upload" ? fileUrl : await urlToEmbed(outsourceLink),
+        upload_time: new Date(),
+        is_outsource: video_type !== "upload",
+      },
+    });
+
+    await db.workspace.update({
+      where: {
+        id: parsedWorkspaceID,
+      },
+      data: {
+        project_name: projectName,
+        description: description,
+        created_at: new Date(),
+        with_video: withVideo,
+        video_type: video_type,
       },
     });
     const targetUrl = `/workspace/${workspace?.id}`;

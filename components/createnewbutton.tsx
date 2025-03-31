@@ -217,7 +217,7 @@ const CreateProjectModal = ({
   };
 
   return (
-    <Modal centered opened onClose={onClose} withCloseButton={false} size="lg">
+    <Modal centered opened onClose={onClose} withCloseButton={false} size="xl">
       <LoadingOverlay
         visible={visible}
         zIndex={1000}
@@ -393,7 +393,7 @@ const CreateProjectWithoutQuotaModal = ({
   };
 
   return (
-    <Modal centered opened onClose={onClose} withCloseButton={false} size="lg">
+    <Modal centered opened onClose={onClose} withCloseButton={false} size="xl">
       <LoadingOverlay visible={visible} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
       <form onSubmit={handleSubmit}>
         <Title order={2} mb="md">

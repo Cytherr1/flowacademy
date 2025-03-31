@@ -68,7 +68,7 @@ export async function increaseQuota(id: number | undefined) {
 
 export async function decreaseQuota(
   id: number | undefined,
-  workspaceID: number
+  workspaceID: number | undefined
 ): Promise<{ success: true }> {
   try {
     if (!id) {

@@ -95,7 +95,6 @@ export default function Workspace({
     const matchingVideo = filterVideos(videos, workspace?.id);
     setVideoToEdit(matchingVideo);
     setEditModalOpen(true);
-    console.log(matchingVideo);
   };
 
   const handleConfirmDelete = async () => {
@@ -247,7 +246,7 @@ export default function Workspace({
         <Modal
           centered
           withCloseButton={false}
-          size="lg"
+          size="xl"
           opened={deleteModalOpen}
           onClose={() => setDeleteModalOpen(false)}
           title="Delete"
@@ -271,7 +270,7 @@ export default function Workspace({
         <Modal
           centered
           withCloseButton={false}
-          size="lg"
+          size="xl"
           opened={editModalOpen}
           onClose={() => setEditModalOpen(false)}
         >
