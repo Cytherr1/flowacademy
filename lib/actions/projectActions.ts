@@ -44,7 +44,8 @@ export async function createProject(
     const projectName = formData.get("projectName")?.toString() || "";
     const withVideo = formData.get("withVideo") === "true";
     const video_type = formData.get("video_type")?.toString() || "";
-    const description = formData.get("description")?.toString() || "No description provided";
+    const description =
+      formData.get("description")?.toString() || "No description provided";
     const outsourceLink = formData.get("outsourceLink")?.toString() || "";
     const fileUrl = formData.get("fileUrl")?.toString() || "";
     const videoID = formData.get("videoID")?.toString() || "";
@@ -121,36 +122,90 @@ export async function createProject(
   }
 }
 
-export async function editProject(
-  formData: FormData,
-  projectId: number
-) {
+export async function editProject(formData: FormData) {
   try {
     const session = await auth();
     if (!session) {
-      throw new Error("User not authenticated!")
+      return {
+        success: false,
+        error: "User not authenticated",
+      };
+    }
+
+    const projectName = formData.get("projectName")?.toString() || "";
+    const withVideo = formData.get("withVideo") === "true";
+    const video_type = formData.get("video_type")?.toString() || "";
+    const description =
+      formData.get("description")?.toString() || "No description provided";
+    const outsourceLink = formData.get("outsourceLink")?.toString() || "";
+    const fileUrl = formData.get("fileUrl")?.toString() || "";
+    const workspaceID = formData.get("workspaceID")?.toString() || "";
+
+    if (!projectName) {
+      return {
+        success: false,
+        targetUrl: "",
+        error: "Project name is required",
+      };
+    }
+
+    if (withVideo) {
+      if (!video_type) {
+        return {
+          success: false,
+          targetUrl: "",
+          error: "Video type is required",
+        };
+      }
+      if (video_type === "upload" && !fileUrl) {
+        return { success: false, targetUrl: "", error: "File URL is required" };
+      }
+      if (video_type === "outsource" && !outsourceLink) {
+        return {
+          success: false,
+          targetUrl: "",
+          error: "Outsource link is required",
+        };
+      }
+    }
+
+    const parsedWorkspaceID =
+      typeof workspaceID === "string" ? parseInt(workspaceID, 10) : workspaceID;
+
+    if (isNaN(parsedWorkspaceID)) {
+      return {
+        success: false,
+        error: "Invalid workspaceID format",
+      };
     }
 
     const workspace = await db.workspace.findFirst({
       where: {
-        id: projectId
-      }
-    })
+        id: parsedWorkspaceID,
+      },
+    });
+
+    if (!workspace) {
+      return {
+        success: false,
+        error: "Workspace not found",
+      };
+    }
 
     await db.workspace.update({
       where: {
-        id: workspace?.id
+        id: workspace?.id,
       },
       data: {
         userId: workspace?.userId,
-        project_name: 
-          formData.get("projectName") !== ""
-          ? (formData.get("projectName") as string)
-          : (workspace?.project_name as string),
-        description: 
-          formData.get("description") !== ""
-          ? (formData.get("description") as string)
-          : (workspace?.description as string),
+        project_name:
+          projectName !== ""
+            ? (projectName as string)
+            : (workspace?.project_name as string),
+        description:
+          description !== ""
+            ? (description as string)
+            : (workspace?.description as string),
         created_at: workspace?.created_at,
         with_video: workspace?.with_video,
         video_type: workspace?.video_type,
@@ -159,15 +214,17 @@ export async function editProject(
             update: {
               file_path:
                 workspace?.video_type === "upload"
-                  ? (formData.get("fileUrl") as string)
-                  : await urlToEmbed(formData.get("outsourceLink") as string),
-            }
-          }
+                  ? (fileUrl as string)
+                  : await urlToEmbed(outsourceLink as string),
+            },
+          },
         }),
       },
     });
+    const targetUrl = `/workspace/${workspace?.id}`;
+    return { success: true, targetUrl };
   } catch {
-    throw new Error("Project edit error.")
+    throw new Error("Project edit error.");
   }
 }
 
@@ -200,9 +257,9 @@ export async function createProjectWithoutQuota(
       };
     }
 
-    console.log("With Video:", withVideo)
-    console.log("Video Type:", video_type)
-    console.log("Outsource Link:", outsourceLink)
+    console.log("With Video:", withVideo);
+    console.log("Video Type:", video_type);
+    console.log("Outsource Link:", outsourceLink);
 
     if (withVideo && video_type === "outsource" && !outsourceLink) {
       return {
@@ -225,7 +282,7 @@ export async function createProjectWithoutQuota(
 
     if (withVideo && video_type === "outsource") {
       const embedUrl = await urlToEmbed(outsourceLink);
-      
+
       await db.video.create({
         data: {
           workspaceId: workspace.id,

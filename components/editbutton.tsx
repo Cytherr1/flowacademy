@@ -15,10 +15,12 @@ import {
   FileInput,
   Alert,
   Progress,
+  Blockquote,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { IconCheck, IconUpload } from "@tabler/icons-react";
-import { editWorkspace } from "@/lib/actions/workspaceActions";
+import { IconCheck, IconInfoCircle, IconUpload } from "@tabler/icons-react";
+import { editProject } from "@/lib/actions/projectActions";
+import { deleteVideo } from "@/lib/actions/videoActions";
 
 interface EditButtonProps {
   workspace: Workspace;
@@ -52,6 +54,7 @@ export default function EditButton({ workspace }: EditButtonProps) {
 
   const form = useForm({
     initialValues: {
+      workspaceID: workspace?.id,
       projectName: workspace?.project_name || "",
       with_video: workspace?.with_video || false,
       video_type: workspace?.video_type || "",
@@ -69,7 +72,10 @@ export default function EditButton({ workspace }: EditButtonProps) {
           ? "Outsource link is required"
           : null,
       file: (value, values) =>
-        values.with_video && values.video_type === "upload" && !fileUrl && !value
+        values.with_video &&
+        values.video_type === "upload" &&
+        !fileUrl &&
+        !value
           ? "File is required"
           : null,
     },
@@ -95,8 +101,8 @@ export default function EditButton({ workspace }: EditButtonProps) {
     formData.append("file", form.values.file);
 
     const timestamp = Date.now();
-    const randomStr = Math.random().toString(36).substring(2, 8);
-    const videoID = `video_${timestamp}_${randomStr}`;
+    const fileName = form.values.file.name.split(".")[0];
+    const videoID = `${fileName}_${timestamp}`;
 
     formData.append("videoID", videoID);
 
@@ -176,6 +182,10 @@ export default function EditButton({ workspace }: EditButtonProps) {
           setMessage({ text: "", type: null });
 
           try {
+            formData.append(
+              "workspaceID",
+              form.values.workspaceID?.toString() || ""
+            );
             formData.append("projectName", form.values.projectName);
             formData.append("with_video", String(form.values.with_video));
             formData.append("video_type", form.values.video_type);
@@ -190,9 +200,14 @@ export default function EditButton({ workspace }: EditButtonProps) {
               formData.append("videoID", form.values.videoID.toString());
             }
 
-            // API SHOULD BE EDITED
+            if (!workspace?.id) {
+              setMessage({ text: "Workspace ID is required", type: "error" });
+              return;
+            }
 
-            const result = await editWorkspace(formData);
+            await deleteVideo(workspace?.id);
+
+            const result = await editProject(formData);
             if (result.success && result.targetUrl) {
               setMessage({
                 text: "Project edited successfully",
@@ -221,6 +236,7 @@ export default function EditButton({ workspace }: EditButtonProps) {
         <Title order={2} mb="md">
           Update Project Details
         </Title>
+        <input type="hidden" name="workspaceId" value={workspace?.id} />
         <TextInput
           label="Project Name"
           placeholder="Enter project name"
@@ -232,7 +248,6 @@ export default function EditButton({ workspace }: EditButtonProps) {
           label="With Video?"
           {...form.getInputProps("with_video", { type: "checkbox" })}
           mb="md"
-          disabled
         />
 
         {form.values.with_video && (
@@ -240,11 +255,11 @@ export default function EditButton({ workspace }: EditButtonProps) {
             label="Video Type"
             {...form.getInputProps("video_type")}
             required
-            mb="md"
+            mb="xl"
           >
             <Group mt="xs">
-              <Radio value="upload" label="Upload" disabled/>
-              <Radio value="outsource" label="Youtube" disabled/>
+              <Radio value="upload" label="Upload" />
+              <Radio value="outsource" label="Youtube" />
             </Group>
           </Radio.Group>
         )}

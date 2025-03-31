@@ -10,6 +10,14 @@ export const config = {
   },
 };
 
+/*
+Video Format: videoID_userID_timestamp.extension
+refactored for better readability and maintainability
+- videoID: The ID of the video being uploaded.
+- userID: The ID of the user uploading the video. Default is "user".
+- timestamp: The current timestamp when the video is uploaded.
+*/
+
 export async function POST(request: Request): Promise<Response> {
   const nodeReq = await createNodeRequest(request);
   const form = new IncomingForm();
@@ -17,16 +25,10 @@ export async function POST(request: Request): Promise<Response> {
   return new Promise<Response>((resolve) => {
     form.parse(nodeReq, async (err, fields, files) => {
       if (err) {
-        const errorResponse = handleError(
-          err,
-          "File upload failed"
-        );
-        
+        const errorResponse = handleError(err, "File upload failed");
+
         return resolve(
-          Response.json(
-            { error: errorResponse.message },
-            { status: 500 }
-          )
+          Response.json({ error: errorResponse.message }, { status: 500 })
         );
       }
 
@@ -44,49 +46,38 @@ export async function POST(request: Request): Promise<Response> {
           new Error("No file uploaded"),
           "No file uploaded"
         );
-        
+
         return resolve(
-          Response.json(
-            { error: errorResponse.message },
-            { status: 400 }
-          )
+          Response.json({ error: errorResponse.message }, { status: 400 })
         );
       }
 
-      // Extract video ID from form fields
-      const videoID = fields.videoID ? 
-        (Array.isArray(fields.videoID) ? fields.videoID[0] : fields.videoID) : 
-        null;
+      const videoID = fields.videoID
+        ? Array.isArray(fields.videoID)
+          ? fields.videoID[0]
+          : fields.videoID
+        : null;
 
       if (!videoID) {
         const errorResponse = handleError(
           new Error("Video ID is required"),
           "Video ID is required"
         );
-        
+
         return resolve(
-          Response.json(
-            { error: errorResponse.message },
-            { status: 400 }
-          )
+          Response.json({ error: errorResponse.message }, { status: 400 })
         );
       }
-      
-      // Get optional userID from form fields
-      const userID = fields.userID ? 
-        (Array.isArray(fields.userID) ? fields.userID[0] : fields.userID) : 
-        'user';
-        
-      // Get optional workspaceID from form fields
-      const workspaceID = fields.workspaceID ? 
-        (Array.isArray(fields.workspaceID) ? fields.workspaceID[0] : fields.workspaceID) : 
-        'temp';
 
-      // Get file extension from original filename
-      const fileExtension = file.originalFilename?.split('.').pop() || 'mp4';
-      
-      // Create a structured file name for better organization
-      const structuredVideoID = `${userID}_${workspaceID}_${videoID}`;
+      const userID = fields.userID
+        ? Array.isArray(fields.userID)
+          ? fields.userID[0]
+          : fields.userID
+        : "user";
+
+      const fileExtension = file.originalFilename?.split(".").pop() || "mp4";
+
+      const structuredVideoID = `${userID}_${videoID}`;
 
       const fileStream = fs.createReadStream(file.filepath);
 
@@ -95,45 +86,40 @@ export async function POST(request: Request): Promise<Response> {
         const apiKey = process.env.BUNNY_API_KEY;
         const uploadUrl = `${process.env.BUNNY_HOSTNAME}${storageZoneName}/${structuredVideoID}.${fileExtension}`;
 
-        axios.put(uploadUrl, fileStream, {
-          headers: {
-            AccessKey: apiKey,
-            "Content-Type": file.mimetype || "application/octet-stream",
-          },
-        })
-        .then(() => {
-          resolve(
-            Response.json({
-              url: `${process.env.BUNNY_PULL_ZONE}${structuredVideoID}.${fileExtension}`,
-              videoID: structuredVideoID,
-              originalVideoID: videoID // Keep the original for reference
-            })
-          );
-        })
-        .catch((error) => {
-          const errorResponse = handleError(
-            error,
-            "File upload to Bunny CDN failed"
-          );
-          
-          resolve(
-            Response.json(
-              { error: errorResponse.message },
-              { status: 500 }
-            )
-          );
-        });
+        axios
+          .put(uploadUrl, fileStream, {
+            headers: {
+              AccessKey: apiKey,
+              "Content-Type": file.mimetype || "application/octet-stream",
+            },
+          })
+          .then(() => {
+            resolve(
+              Response.json({
+                url: `${process.env.BUNNY_PULL_ZONE}${structuredVideoID}.${fileExtension}`,
+                videoID: structuredVideoID,
+                originalVideoID: videoID,
+              })
+            );
+          })
+          .catch((error) => {
+            const errorResponse = handleError(
+              error,
+              "File upload to Bunny CDN failed"
+            );
+
+            resolve(
+              Response.json({ error: errorResponse.message }, { status: 500 })
+            );
+          });
       } catch (error) {
         const errorResponse = handleError(
           error,
           "File upload to Bunny CDN failed"
         );
-        
+
         return resolve(
-          Response.json(
-            { error: errorResponse.message },
-            { status: 500 }
-          )
+          Response.json({ error: errorResponse.message }, { status: 500 })
         );
       }
     });

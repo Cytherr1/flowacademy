@@ -5,7 +5,6 @@ import {
   fetchVideo,
   fetchWorkspaceName,
   isOutsource,
-  urlToEmbed,
 } from "@/lib/actions/projectActions";
 
 export default async function ProjectPage({

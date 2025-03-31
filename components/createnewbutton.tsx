@@ -105,8 +105,8 @@ const CreateProjectModal = ({
     uploadData.append("file", form.values.file);
 
     const timestamp = Date.now();
-    const randomStr = Math.random().toString(36).substring(2, 8);
-    const videoID = `video_${timestamp}_${randomStr}`;
+    const fileName = form.values.file.name.split(".")[0];
+    const videoID = `${fileName}_${timestamp}`;
     uploadData.append("videoID", videoID);
 
     try {
@@ -349,7 +349,6 @@ const CreateProjectWithoutQuotaModal = ({
     setMessage({ text: "", type: null });
     const submissionData = new FormData();
     
-    // Correctly set form data
     submissionData.append("projectName", form.values.projectName);
     submissionData.append("description", form.values.description || "");
     submissionData.append("withVideo", form.values.outsourceLink ? "true" : "false");

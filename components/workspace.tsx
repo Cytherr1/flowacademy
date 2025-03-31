@@ -200,7 +200,6 @@ export default function Workspace({ workspaces, quota }: WorkspaceProps) {
           size="lg"
           opened={editModalOpen}
           onClose={() => setEditModalOpen(false)}
-          title="Edit"
         >
           <EditButton workspace={workspaceToEdit}></EditButton>
         </Modal>
