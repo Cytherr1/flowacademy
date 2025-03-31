@@ -7,6 +7,7 @@ import {
   Button,
   Center,
   Group,
+  Menu,
   Modal,
   Stack,
   Table,
@@ -20,15 +21,15 @@ import {
 import {
   IconEdit,
   IconTrash,
-  IconPointerFilled,
   IconCircleCheckFilled,
   IconCircleXFilled,
+  IconAdjustments,
 } from "@tabler/icons-react";
-import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import EditButton from "./editbutton";
-interface WorkspaceItem {
+
+type WorkspaceItem = {
   id: number;
   project_name: string;
   description: string;
@@ -39,28 +40,42 @@ interface WorkspaceItem {
   outsourceLink?: string;
   fileUrl?: string;
   videoID?: string;
-}
+} | null;
 
-type Quota = {
+interface Quota {
   id: number;
   userId: string;
   videosUploaded: number;
   maxVideosAllowed: number;
   lastUpdated: Date;
+}
+
+type VideoItem = {
+  id: number;
+  workspaceId: number;
+  file_path: string;
+  upload_time: Date;
+  is_outsource: boolean;
 } | null;
 
 interface WorkspaceProps {
   workspaces: WorkspaceItem[];
   quota: Quota;
+  videos: VideoItem[];
 }
 
-export default function Workspace({ workspaces, quota }: WorkspaceProps) {
+export default function Workspace({
+  workspaces,
+  quota,
+  videos,
+}: WorkspaceProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [workspaceToDelete, setWorkspaceToDelete] =
     useState<WorkspaceItem | null>(null);
   const [workspaceToEdit, setWorkspaceToEdit] = useState<WorkspaceItem | null>(
     null
   );
+  const [videoToEdit, setVideoToEdit] = useState<VideoItem | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [message, setMessage] = useState<{
     text: string;
@@ -68,14 +83,19 @@ export default function Workspace({ workspaces, quota }: WorkspaceProps) {
   } | null>(null);
   const router = useRouter();
 
-  const handleDelete = (workspace: WorkspaceItem) => {
+  const handleDelete = (workspace: WorkspaceItem, e: React.MouseEvent) => {
+    e.stopPropagation();
     setWorkspaceToDelete(workspace);
     setDeleteModalOpen(true);
   };
 
-  const handleEdit = async (workspace: WorkspaceItem) => {
+  const handleEdit = (workspace: WorkspaceItem, e: React.MouseEvent) => {
+    e.stopPropagation();
     setWorkspaceToEdit(workspace);
+    const matchingVideo = filterVideos(videos, workspace?.id);
+    setVideoToEdit(matchingVideo);
     setEditModalOpen(true);
+    console.log(matchingVideo);
   };
 
   const handleConfirmDelete = async () => {
@@ -104,35 +124,84 @@ export default function Workspace({ workspaces, quota }: WorkspaceProps) {
     }
   };
 
-  const rows = workspaces.map((element) => (
-    <TableTr key={element.id}>
-      <TableTd>{element.project_name}</TableTd>
-      <TableTd>{element.description}</TableTd>
-      <TableTd>
-        <Link href={`/workspace/${element.id}`}>
-          <ActionIcon variant="default" size="input-sm" color="blue">
-            <IconPointerFilled />
-          </ActionIcon>
-        </Link>
-        <ActionIcon
-          variant="default"
-          size="input-sm"
-          color="blue"
-          onClick={() => handleEdit(element)}
-        >
-          <IconEdit />
-        </ActionIcon>
-        <ActionIcon
-          variant="light"
-          size="input-sm"
-          color="red"
-          onClick={() => handleDelete(element)}
-        >
-          <IconTrash />
-        </ActionIcon>
-      </TableTd>
-    </TableTr>
-  ));
+  const filterVideos = (
+    videos: VideoItem[],
+    workspaceId: number | undefined
+  ): VideoItem => {
+    const matchingVideos = videos.filter(
+      (video) => video?.workspaceId === workspaceId
+    );
+    return matchingVideos[0] || null;
+  };
+
+  const rows = workspaces.map((element) => {
+    if (!element) return null;
+    const handleRowClick = (e: React.MouseEvent) => {
+      if (
+        e.target instanceof Element &&
+        (e.target.closest(".menu-container") ||
+          e.target.closest(".menu-dropdown"))
+      ) {
+        return;
+      }
+      router.push(`/workspace/${element.id}`);
+    };
+
+    return (
+      <TableTr
+        key={element.id}
+        onClick={handleRowClick}
+        style={{ cursor: "pointer" }}
+      >
+        <TableTd>{element.project_name}</TableTd>
+        <TableTd>{element.description}</TableTd>
+        <TableTd>
+          <div className="menu-container" onClick={(e) => e.stopPropagation()}>
+            <Menu
+              trigger="hover"
+              openDelay={100}
+              closeDelay={400}
+              transitionProps={{ transition: "rotate-right", duration: 150 }}
+            >
+              <Menu.Target>
+                <ActionIcon
+                  variant="filled"
+                  size="xl"
+                  radius="xl"
+                  aria-label="Settings"
+                >
+                  <IconAdjustments
+                    style={{ width: "70%", height: "70%" }}
+                    stroke={1.5}
+                  />
+                </ActionIcon>
+              </Menu.Target>
+              <Menu.Dropdown className="menu-dropdown">
+                <Menu.Item
+                  className="action-button"
+                  variant="default"
+                  color="blue"
+                  onClick={(e) => handleEdit(element, e)}
+                  leftSection={<IconEdit size={28} />}
+                >
+                  Edit
+                </Menu.Item>
+                <Menu.Item
+                  className="action-button"
+                  variant="default"
+                  color="red"
+                  onClick={(e) => handleDelete(element, e)}
+                  leftSection={<IconTrash size={28} />}
+                >
+                  Delete
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
+          </div>
+        </TableTd>
+      </TableTr>
+    );
+  });
 
   return (
     <Center miw="100%" mah="100%">
@@ -159,12 +228,17 @@ export default function Workspace({ workspaces, quota }: WorkspaceProps) {
           </Alert>
         )}
 
-        <Table align="right" horizontalSpacing="xl">
+        <Table
+          align="right"
+          horizontalSpacing="xl"
+          withColumnBorders
+          highlightOnHover
+        >
           <TableThead>
             <TableTr>
               <TableTh>Project Name</TableTh>
               <TableTh>Project Description</TableTh>
-              <TableTh>Actions</TableTh>
+              <TableTh></TableTh>
             </TableTr>
           </TableThead>
           <TableTbody>{rows}</TableTbody>
@@ -201,7 +275,11 @@ export default function Workspace({ workspaces, quota }: WorkspaceProps) {
           opened={editModalOpen}
           onClose={() => setEditModalOpen(false)}
         >
-          <EditButton workspace={workspaceToEdit}></EditButton>
+          <EditButton
+            workspace={workspaceToEdit}
+            video={videoToEdit}
+            quota={quota}
+          ></EditButton>
         </Modal>
       </Stack>
     </Center>

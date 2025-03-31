@@ -19,9 +19,26 @@ export default async function WorkspacePage() {
     },
   });
 
+  const videos = await db.video.findMany({
+    where: {
+      workspaceId: {
+        in: workspaces.map((workspace) => workspace.id),
+      },
+    },
+  });
+
+  if (!workspaces || !quota || !videos){
+    console.log("Error fetching data from the database.");
+    return;
+  }
+
   return (
     <Page>
-      <Workspace workspaces={workspaces} quota={quota}></Workspace>
+      <Workspace
+        workspaces={workspaces}
+        quota={quota}
+        videos={videos}
+      ></Workspace>
     </Page>
   );
 }

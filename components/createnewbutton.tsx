@@ -16,6 +16,7 @@ import {
   FileInput,
   Alert,
   Progress,
+  LoadingOverlay,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
@@ -29,6 +30,7 @@ import {
   createProjectWithoutQuota,
 } from "@/lib/actions/projectActions";
 import { decreaseQuota, increaseQuota } from "@/lib/actions/quotaActions";
+import { useDisclosure } from "@mantine/hooks";
 
 type Quota = {
   id: number;
@@ -54,6 +56,7 @@ const CreateProjectModal = ({
   quota,
 }: CreateProjectModalProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [visible, { toggle }] = useDisclosure(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [message, setMessage] = useState<Message>({ text: "", type: null });
@@ -194,7 +197,6 @@ const CreateProjectModal = ({
       const result = await createProject(submissionData);
       if (result.success && result.targetUrl) {
         setMessage({ text: "Project created successfully", type: "success" });
-        form.reset();
         setFileUrl(null);
         onSuccess(result.targetUrl);
       } else {
@@ -216,6 +218,11 @@ const CreateProjectModal = ({
 
   return (
     <Modal centered opened onClose={onClose} withCloseButton={false} size="lg">
+      <LoadingOverlay
+        visible={visible}
+        zIndex={1000}
+        overlayProps={{ radius: "sm", blur: 2 }}
+      />
       <form onSubmit={handleSubmit}>
         <Title order={2} mb="md">
           Create New Project
@@ -307,6 +314,7 @@ const CreateProjectModal = ({
         <Button
           fullWidth
           type="submit"
+          onClick={toggle}
           disabled={
             form.values.withVideo &&
             form.values.video_type === "upload" &&
@@ -329,6 +337,7 @@ const CreateProjectWithoutQuotaModal = ({
   onSuccess,
 }: CreateProjectWithoutQuotaModalProps) => {
   const [message, setMessage] = useState<Message>({ text: "", type: null });
+  const [visible, { toggle }] = useDisclosure(false);
   const form = useForm({
     initialValues: {
       projectName: "",
@@ -345,21 +354,26 @@ const CreateProjectWithoutQuotaModal = ({
     event.preventDefault();
     form.validate();
     if (!form.isValid()) return;
-  
+
     setMessage({ text: "", type: null });
     const submissionData = new FormData();
-    
+
     submissionData.append("projectName", form.values.projectName);
     submissionData.append("description", form.values.description || "");
-    submissionData.append("withVideo", form.values.outsourceLink ? "true" : "false");
-    submissionData.append("video_type", form.values.outsourceLink ? "outsource" : "");
+    submissionData.append(
+      "withVideo",
+      form.values.outsourceLink ? "true" : "false"
+    );
+    submissionData.append(
+      "video_type",
+      form.values.outsourceLink ? "outsource" : ""
+    );
     submissionData.append("outsourceLink", form.values.outsourceLink || "");
-  
+
     try {
       const result = await createProjectWithoutQuota(submissionData);
       if (result.success && result.targetUrl) {
         setMessage({ text: "Project created successfully", type: "success" });
-        form.reset();
         onSuccess(result.targetUrl);
       } else {
         setMessage({
@@ -380,6 +394,7 @@ const CreateProjectWithoutQuotaModal = ({
 
   return (
     <Modal centered opened onClose={onClose} withCloseButton={false} size="lg">
+      <LoadingOverlay visible={visible} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
       <form onSubmit={handleSubmit}>
         <Title order={2} mb="md">
           Create New Project
@@ -419,7 +434,7 @@ const CreateProjectWithoutQuotaModal = ({
             {message.text}
           </Alert>
         )}
-        <Button fullWidth type="submit">
+        <Button onClick={toggle} fullWidth type="submit">
           Create Project
         </Button>
       </form>

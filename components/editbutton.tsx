@@ -15,16 +15,28 @@ import {
   FileInput,
   Alert,
   Progress,
-  Blockquote,
+  LoadingOverlay,
+  AspectRatio,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { IconCheck, IconInfoCircle, IconUpload } from "@tabler/icons-react";
+import { IconCheck, IconUpload } from "@tabler/icons-react";
 import { editProject } from "@/lib/actions/projectActions";
 import { deleteVideo } from "@/lib/actions/videoActions";
+import { useDisclosure } from "@mantine/hooks";
 
 interface EditButtonProps {
   workspace: Workspace;
+  video: Video;
+  quota: Quota;
 }
+
+type Video = {
+  id: number;
+  workspaceId: number;
+  file_path: string;
+  upload_time: Date;
+  is_outsource: boolean;
+} | null;
 
 type Workspace = {
   id: number;
@@ -39,7 +51,19 @@ type Workspace = {
   videoID?: string;
 } | null;
 
-export default function EditButton({ workspace }: EditButtonProps) {
+type Quota = {
+  id: number;
+  userId: string;
+  videosUploaded: number;
+  maxVideosAllowed: number;
+  lastUpdated: Date;
+} | null;
+
+export default function EditButton({
+  workspace,
+  video,
+  quota,
+}: EditButtonProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -51,6 +75,7 @@ export default function EditButton({ workspace }: EditButtonProps) {
     text: "",
     type: null,
   });
+  const [visible, { toggle }] = useDisclosure(false);
 
   const form = useForm({
     initialValues: {
@@ -59,7 +84,7 @@ export default function EditButton({ workspace }: EditButtonProps) {
       with_video: workspace?.with_video || false,
       video_type: workspace?.video_type || "",
       description: workspace?.description || "",
-      outsourceLink: workspace?.outsourceLink || "",
+      outsourceLink: video?.file_path || "",
       file: null as File | null,
       videoID: workspace?.videoID || "",
     },
@@ -173,6 +198,11 @@ export default function EditButton({ workspace }: EditButtonProps) {
 
   return (
     <Box>
+      <LoadingOverlay
+        visible={visible}
+        zIndex={1000}
+        overlayProps={{ radius: "sm", blur: 2 }}
+      />
       <form
         action={async (formData: FormData) => {
           form.validate();
@@ -213,7 +243,6 @@ export default function EditButton({ workspace }: EditButtonProps) {
                 text: "Project edited successfully",
                 type: "success",
               });
-              form.reset();
               setFileUrl(null);
               router.push(result.targetUrl);
             } else {
@@ -300,16 +329,42 @@ export default function EditButton({ workspace }: EditButtonProps) {
                 File uploaded successfully
               </Alert>
             )}
+            <Title order={4}>Current Video</Title>
+            <AspectRatio
+              ratio={16 / 9}
+              style={{ minWidth: "400px", margin: "0 auto" }}
+              mb="md"
+            >
+              <iframe
+                src={video?.file_path}
+                style={{ border: 0, width: "100%", height: "100%" }}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              />
+            </AspectRatio>
           </Stack>
         )}
         {form.values.with_video && form.values.video_type === "outsource" && (
-          <TextInput
-            label="Outsource Link"
-            placeholder="https://www.youtube.com/..."
-            {...form.getInputProps("outsourceLink")}
-            required
-            mb="md"
-          />
+          <Stack mb="md">
+            <TextInput
+              label="Outsource Link"
+              placeholder="https://www.youtube.com/..."
+              {...form.getInputProps("outsourceLink")}
+              required
+              mb="md"
+            />
+            <Title order={4}>Current Video</Title>
+            <AspectRatio
+              ratio={16 / 9}
+              style={{ minWidth: "400px", margin: "0 auto" }}
+            >
+              <iframe
+                title="Embedded video"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                src={video?.file_path}
+                style={{ border: 0, width: "100%", height: "100%" }}
+              />
+            </AspectRatio>
+          </Stack>
         )}
         <Textarea
           label="Project Description (Optional)"
@@ -325,6 +380,7 @@ export default function EditButton({ workspace }: EditButtonProps) {
             form.values.video_type === "upload" &&
             !fileUrl
           }
+          onClick={toggle}
         >
           Update Project
         </Button>
