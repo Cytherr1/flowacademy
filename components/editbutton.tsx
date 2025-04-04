@@ -121,7 +121,7 @@ export default function EditButton({
       form.setFieldValue("file", null);
       setFileUrl(null);
     }
-  }, [form.values.with_video]);
+  }, [form, form.values.with_video]);
 
   const handleFileUpload = async () => {
     if (!form.values.file) return;

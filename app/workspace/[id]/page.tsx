@@ -7,21 +7,22 @@ import {
   isOutsource,
 } from "@/lib/actions/projectActions";
 
-export default async function ProjectPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const id = parseInt(params.id, 10);
+export default async function ProjectPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
+  const id = await params.id;
   const workspaceName = await fetchWorkspaceName(id);
   const rows = await fetchProjectRows(id);
   const is_outsource = await isOutsource(id);
   const video = await fetchVideo(id);
-  
+
   return (
     <Page>
       <ProjectComponent
-        id={id}
+        id={parseInt(id)}
         video={video}
         workspaceName={workspaceName}
         rows={rows}

@@ -93,7 +93,7 @@ const CreateProjectModal = ({
       form.setFieldValue("file", null);
       setFileUrl(null);
     }
-  }, [form.values.withVideo]);
+  }, [form.values.withVideo, form]);
 
   const handleFileUpload = async () => {
     if (!form.values.file || !quota) return;
