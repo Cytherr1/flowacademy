@@ -276,7 +276,7 @@ export default function ProjectComponent({
       });
 
       const metrics = calculatePFCMetrics(activities);
-      const finalY = (doc as any).lastAutoTable.finalY || 40;
+      const finalY = (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY || 40;
 
       if (finalY > doc.internal.pageSize.getHeight() - 60) {
         doc.addPage();
@@ -308,7 +308,20 @@ export default function ProjectComponent({
     }
   };
 
-  const calculatePFCMetrics = (activities: Rows[]): Record<string, any> => {
+  const calculatePFCMetrics = (activities: Rows[]): {
+    valueAdded: number;
+    nonValueAdded: number;
+    totalActivities: number;
+    valueAddedPercentage: string;
+    nonValueAddedPercentage: string;
+    totalDistance: string;
+    totalTime: string;
+    operationCount: number;
+    inspectionCount: number;
+    transportationCount: number;
+    delayCount: number;
+    storageCount: number;
+  } => {
     const valueAdded = activities.filter((a) => a.symbolIndex === 0).length;
 
     const nonValueAdded = activities.filter(
@@ -357,7 +370,20 @@ export default function ProjectComponent({
 
   const drawMetricsTable = (
     doc: jsPDF,
-    metrics: Record<string, any>,
+    metrics: {
+      valueAdded: number;
+      nonValueAdded: number;
+      totalActivities: number;
+      valueAddedPercentage: string;
+      nonValueAddedPercentage: string;
+      totalDistance: string;
+      totalTime: string;
+      operationCount: number;
+      inspectionCount: number;
+      transportationCount: number;
+      delayCount: number;
+      storageCount: number;
+    },
     startY: number
   ) => {
     autoTable(doc, {

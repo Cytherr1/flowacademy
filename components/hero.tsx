@@ -14,7 +14,7 @@ import {
 } from "@mantine/core";
 import { heroData } from "@/lib/data";
 import NextImage from "next/image";
-import logo from "../static_content/logo.png";
+import logo from "../public/logo.png";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 

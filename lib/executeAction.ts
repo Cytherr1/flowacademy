@@ -17,7 +17,7 @@ const executeAction = async <T>({
       success: true,
       message: successMessage,
     };
-  } catch (error: any) {
+  } catch (error) {
     if (isRedirectError(error)) {
       throw error;
     }
@@ -31,7 +31,7 @@ const executeAction = async <T>({
     
     return {
       success: false,
-      message: error.message
+      message: (error as Error).message
     };
   }
 };

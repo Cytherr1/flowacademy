@@ -1,6 +1,6 @@
 "use server";
 
-import { Session, User } from "next-auth";
+import { Session } from "next-auth";
 import db from "../db";
 import { genSalt, hash } from "bcrypt-ts";
 import { assignQuota } from "./quotaActions";

@@ -160,14 +160,13 @@ const CreateProjectModal = ({
       };
 
       xhr.send(uploadData);
-    } catch (error: any) {
+    }catch (error) {
       setMessage({
-        text:
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred",
+        text: error instanceof Error ? error.message : "An unexpected error occurred",
         type: "error",
       });
+    }
+    finally{
       setIsLoading(false);
       await decreaseQuota(quota.id, -1);
     }
@@ -205,7 +204,7 @@ const CreateProjectModal = ({
           type: "error",
         });
       }
-    } catch (error: any) {
+    } catch (error) {
       setMessage({
         text:
           error instanceof Error
@@ -381,7 +380,7 @@ const CreateProjectWithoutQuotaModal = ({
           type: "error",
         });
       }
-    } catch (error: any) {
+    } catch (error) {
       setMessage({
         text:
           error instanceof Error
@@ -394,7 +393,11 @@ const CreateProjectWithoutQuotaModal = ({
 
   return (
     <Modal centered opened onClose={onClose} withCloseButton={false} size="xl">
-      <LoadingOverlay visible={visible} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
+      <LoadingOverlay
+        visible={visible}
+        zIndex={1000}
+        overlayProps={{ radius: "sm", blur: 2 }}
+      />
       <form onSubmit={handleSubmit}>
         <Title order={2} mb="md">
           Create New Project

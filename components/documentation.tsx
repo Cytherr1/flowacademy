@@ -5,15 +5,12 @@ import {
   Box,
   Title,
   Text,
-  Image,
   Group,
   Button,
   AspectRatio,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
-import NextImage from "next/image";
 import { useState } from "react";
-import placeholder from "../static_content/placholder.png";
 import Link from "next/link";
 import {
   IconUserFilled,
