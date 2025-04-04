@@ -10,16 +10,14 @@ import {
 export default async function ProjectPage({
   params,
 }: {
-  params: {
-    id: number;
-  };
+  params: { id: string };
 }) {
-  const { id } = await params;
+  const id = parseInt(params.id, 10);
   const workspaceName = await fetchWorkspaceName(id);
   const rows = await fetchProjectRows(id);
   const is_outsource = await isOutsource(id);
   const video = await fetchVideo(id);
-
+  
   return (
     <Page>
       <ProjectComponent
