@@ -265,7 +265,7 @@ export default function ProjectComponent({
           4: { cellWidth: 35 },
           5: { cellWidth: 40 },
         },
-        didDrawPage: (data) => {
+        didDrawPage: () => {
           doc.setFontSize(8);
           doc.text(
             `Page ${doc.getNumberOfPages()}`,
