@@ -3,15 +3,10 @@ import Page from "@/components/page";
 import { auth } from "@/lib/auth";
 import db from "@/lib/db";
 import { redirect } from "next/navigation";
-import { assignQuota } from "@/lib/actions/quotaActions";
 
 export default async function WorkspacePage() {
   const session = await auth();
   if (!session) redirect("/signin");
-  
-  if (!session.user.quota) {
-    await assignQuota(session.user.id as string)
-  }
 
   const workspaces = await db.workspace.findMany({
     where: {

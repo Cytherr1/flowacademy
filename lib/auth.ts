@@ -1,55 +1,57 @@
-import NextAuth from "next-auth"
+import NextAuth from "next-auth";
 import { v4 as uuid } from "uuid";
 import { encode as defaultEncode } from "next-auth/jwt";
-import Credentials from "next-auth/providers/credentials"
-import Google from "next-auth/providers/google"
-import { PrismaAdapter } from "@auth/prisma-adapter"
-import db from "./db"
+import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import db from "./db";
 import { loginSchema } from "./schema";
 import { compare } from "bcrypt-ts";
 
 const adapter = PrismaAdapter(db);
 
-export const { auth, handlers, signIn, signOut } = NextAuth({ 
+export const { auth, handlers, signIn, signOut } = NextAuth({
   adapter,
   providers: [
     Google,
     Credentials({
       credentials: {
         email: {},
-        password: {}
+        password: {},
       },
       authorize: async (credentials) => {
-
-        const validatedCredentials = loginSchema.parse(credentials)
+        const validatedCredentials = loginSchema.parse(credentials);
 
         const user = await db.user.findFirst({
           where: {
             email: validatedCredentials.email,
-          }
-        })
-        if(!user) {
-          throw new Error("We cannot find an user with this email.")
+          },
+        });
+        if (!user) {
+          throw new Error("We cannot find an user with this email.");
         }
 
-        const isPassValid = await compare(validatedCredentials.password, user?.password as string)
+        const isPassValid = await compare(
+          validatedCredentials.password,
+          user?.password as string
+        );
 
-        if(!isPassValid) {
-          throw new Error("Invalid credentials.")
+        if (!isPassValid) {
+          throw new Error("Invalid credentials.");
         }
 
         const userSession = await db.session.findFirst({
           where: {
-            user: user
-          }
-        })
-        
-        if(userSession) {
-          await db.session.delete({ where: { id: userSession.id }})
+            user: user,
+          },
+        });
+
+        if (userSession) {
+          await db.session.delete({ where: { id: userSession.id } });
         }
-        return user
-      }
-    })
+        return user;
+      },
+    }),
   ],
   callbacks: {
     async jwt({ token, account }) {
@@ -82,5 +84,27 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       }
       return defaultEncode(params);
     },
-  }
-})
+  },
+
+  events: {
+    async createUser({ user }) {
+      if (!user.id) {
+        throw new Error("User ID is undefined. Cannot create quota.");
+      }
+
+      const isQuotaExits = await db.quota.findFirst({
+        where: {
+          userId: user.id,
+        },
+      });
+
+      if (!isQuotaExits) {
+        await db.quota.create({
+          data: {
+            userId: user.id,
+          },
+        });
+      }
+    },
+  },
+});
