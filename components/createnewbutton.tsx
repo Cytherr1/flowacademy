@@ -93,12 +93,10 @@ const CreateProjectModal = ({
       form.setFieldValue("file", null);
       setFileUrl(null);
     }
-  }, [form.values.withVideo, form]);
+  }, [form.values.withVideo]);
 
   const handleFileUpload = async () => {
     if (!form.values.file || !quota) return;
-
-    await increaseQuota(quota.id);
 
     setIsLoading(true);
     setUploadProgress(0);
@@ -122,7 +120,6 @@ const CreateProjectModal = ({
       }
     } catch (error) {
       console.error("Error fetching current user:", error);
-      await decreaseQuota(quota.id, -1);
     }
 
     try {
@@ -168,7 +165,7 @@ const CreateProjectModal = ({
     }
     finally{
       setIsLoading(false);
-      await decreaseQuota(quota.id, -1);
+      await increaseQuota(quota.id);
     }
   };
 
