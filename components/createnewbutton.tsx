@@ -29,7 +29,7 @@ import {
   createProject,
   createProjectWithoutQuota,
 } from "@/lib/actions/projectActions";
-import { decreaseQuota, increaseQuota } from "@/lib/actions/quotaActions";
+import { increaseQuota } from "@/lib/actions/quotaActions";
 import { useDisclosure } from "@mantine/hooks";
 
 type Quota = {
