@@ -112,7 +112,6 @@ export default function Workspace({
         });
       }
     } catch (error) {
-      console.log("Error deleting workspace:", error);
       setMessage({
         text:
           error instanceof Error

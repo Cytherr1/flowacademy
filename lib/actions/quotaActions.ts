@@ -17,7 +17,6 @@ export async function getQuota(id: number | undefined) {
     return quota;
   } catch (error: unknown) {
     const err = error as Error;
-    console.log("Error fetching quota:", err.message);
     throw new Error(err.message || "Failed to fetch quota name");
   }
 }
@@ -36,7 +35,6 @@ export async function assignQuota(userId: string) {
     return { success: true };
   } catch (error: unknown) {
     const err = error as Error;
-    console.log("Error fetching quota:", err.message);
     throw new Error(err.message || "Failed to fetch quota name");
   }
 }
@@ -61,7 +59,6 @@ export async function increaseQuota(id: number | undefined) {
     return { success: true };
   } catch (error: unknown) {
     const err = error as Error;
-    console.log("Error increasing quota:", err.message);
     throw new Error(err.message || "Failed to increase quota");
   }
 }
@@ -113,7 +110,6 @@ export async function decreaseQuota(
     return { success: true };
   } catch (error: unknown) {
     const err = error as Error;
-    console.log("Error decreasing quota:", err.message);
     throw new Error(err.message || "Failed to decrease quota");
   }
 }

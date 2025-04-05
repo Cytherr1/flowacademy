@@ -20,9 +20,6 @@ export async function DELETE(request: Request) {
     let deletedAny = false;
     const deletedFiles = [];
 
-    // Log only once before we try to delete files
-    console.log(`Attempting to delete video: ${videoID}`);
-
     for (const ext of allowedExtensions) {
       const filePath = `${process.env.BUNNY_HOSTNAME}${storageZoneName}/${videoID}.${ext}`;
       
@@ -47,13 +44,11 @@ export async function DELETE(request: Request) {
     }
 
     if (deletedAny) {
-      console.log(`Successfully deleted video ${videoID} with formats: ${deletedFiles.join(', ')}`);
       return Response.json({ 
         message: "Video deleted successfully",
         formats: deletedFiles
       });
     } else {
-      console.log(`No files found for video ID: ${videoID}`);
       return Response.json({ error: "File not found with any allowed extensions" }, { status: 404 });
     }
   } catch (error: unknown) {

@@ -10,14 +10,6 @@ export const config = {
   },
 };
 
-/*
-Video Format: videoID_userID_timestamp.extension
-refactored for better readability and maintainability
-- videoID: The ID of the video being uploaded.
-- userID: The ID of the user uploading the video. Default is "user".
-- timestamp: The current timestamp when the video is uploaded.
-*/
-
 export async function POST(request: Request): Promise<Response> {
   const nodeReq = await createNodeRequest(request);
   const form = new IncomingForm();

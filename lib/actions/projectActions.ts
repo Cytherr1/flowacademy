@@ -252,10 +252,6 @@ export async function createProjectWithoutQuota(
       };
     }
 
-    console.log("With Video:", withVideo);
-    console.log("Video Type:", video_type);
-    console.log("Outsource Link:", outsourceLink);
-
     if (withVideo && video_type === "outsource" && !outsourceLink) {
       return {
         success: false,
@@ -325,7 +321,6 @@ export async function fetchVideo(workspaceID: number | string) {
     return videoPath;
   } catch (error: unknown) {
     const err = error as Error;
-    console.log("Error fetching workspace name:", err.message);
     throw new Error(err.message || "Failed to fetch workspace name");
   }
 }
@@ -352,7 +347,6 @@ export async function fetchWorkspaceName(workspaceID: number | string) {
     return workspace?.project_name;
   } catch (error: unknown) {
     const err = error as Error;
-    console.log("Error fetching workspace name:", err.message);
     throw new Error(err.message || "Failed to fetch workspace name");
   }
 }
@@ -395,7 +389,6 @@ export async function fetchProjectRows(workspaceID: number | string) {
     return rows;
   } catch (error: unknown) {
     const err = error as Error;
-    console.log("Error fetching project rows:", err.message);
     throw new Error(err.message || "Failed to fetch project rows");
   }
 }
@@ -435,7 +428,6 @@ export async function saveProjectRows({
     return { success: true };
   } catch (error: unknown) {
     const err = error as Error;
-    console.log("Error saving project rows:", err.message);
     throw new Error(err.message || "Failed to save project rows");
   }
 }
@@ -463,7 +455,6 @@ export async function deleteRow({ workspaceID, activityNo }: DeleteRowProps) {
     return { success: true };
   } catch (error: unknown) {
     const err = error as Error;
-    console.log("Error deleting row:", err.message);
     throw new Error(err.message || "Failed to delete row");
   }
 }
@@ -498,7 +489,6 @@ export async function isOutsource(workspaceID: number | string) {
     return is_outsource?.is_outsource;
   } catch (error: unknown) {
     const err = error as Error;
-    console.log("Error fetching is_outsource:", err.message);
     throw new Error(err.message || "Failed to fetch is_outsource");
   }
 }
