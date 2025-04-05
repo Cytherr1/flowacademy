@@ -1,5 +1,6 @@
 import Page from "@/components/page";
 import SignInForm from "@/components/signinform";
+import { googleLogin } from "@/lib/actions/auth";
 import { auth } from "@/lib/auth";
 import { Anchor, Button, Divider, Group, Stack, Text } from "@mantine/core";
 import { IconBrandGoogleFilled } from "@tabler/icons-react";
@@ -20,7 +21,11 @@ export default async function SignIn() {
       >
         <SignInForm/>
         <Divider mt="lg" w={200} my="xs" label="Or" labelPosition="center" />
-        <Button w={220} justify="center" leftSection={<IconBrandGoogleFilled size={14}/>} variant="default" mt="md">
+        <Button w={220} justify="center" leftSection={<IconBrandGoogleFilled size={14}/>} variant="default" mt="md" onClick={
+          async () => {
+            "use server"; 
+            await googleLogin();
+          }}>
           Sign in with Google
         </Button>
         <Group justify="center" mt="md">
