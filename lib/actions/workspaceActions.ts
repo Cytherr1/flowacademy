@@ -50,8 +50,7 @@ export async function deleteWorkspace(
             }
           );
 
-          const result = await response.json();
-          return result;
+          await response.json();
         } catch (fetchError) {
           console.error("Error deleting from Bunny CDN:", fetchError);
         }

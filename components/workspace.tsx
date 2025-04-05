@@ -101,7 +101,6 @@ export default function Workspace({
     try {
       if (!workspaceToDelete) return;
       const result = await deleteWorkspace(workspaceToDelete.id, quota?.id);
-
       if (result.success) {
         setDeleteModalOpen(false);
         setMessage({ text: "Workspace deleted successfully", type: "success" });
@@ -113,6 +112,7 @@ export default function Workspace({
         });
       }
     } catch (error) {
+      console.log("Error deleting workspace:", error);
       setMessage({
         text:
           error instanceof Error
