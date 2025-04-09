@@ -15,6 +15,7 @@ import {
   Flex,
   Modal,
   ScrollArea,
+  Tooltip,
 } from "@mantine/core";
 import {
   IconArrowBigRightLines,
@@ -483,6 +484,7 @@ export default function ProjectComponent({
             const IconComponent =
               act.symbolIndex === iconIndex ? icon.filled : icon.outlined;
             return (
+              <Tooltip label={iconIndex === 0 ? "Operations symbol represent process to be performed" : iconIndex === 1 ? "Inspection symbol represent inspection to be performed" : iconIndex === 2 ? "Transportation is the movement of products, men, and equipment" : iconIndex === 3 ? "Delay is the term describing the waiting period in between tasks" : "Storage is the process of holding goods in place, either permanently or temporarily"} key={iconIndex}>
               <ActionIcon
                 key={iconIndex}
                 size="sm"
@@ -490,6 +492,7 @@ export default function ProjectComponent({
               >
                 <IconComponent size={18} />
               </ActionIcon>
+              </Tooltip>
             );
           })}
         </Group>
