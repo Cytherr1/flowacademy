@@ -6,12 +6,17 @@ import {
   fetchWorkspaceName,
   isOutsource,
 } from "@/lib/actions/projectActions";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export default async function ProjectPage(
   props: {
     params: Promise<{ id: string }>;
   }
 ) {
+  const session = await auth();
+  if (!session) redirect("/signin");
+
   const params = await props.params;
   const id = await params.id;
   const workspaceName = await fetchWorkspaceName(id);
