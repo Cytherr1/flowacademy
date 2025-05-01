@@ -94,6 +94,8 @@ export default function ProjectComponent({
     }
   }, [initialRows]);
 
+  const allSymbolsSelected = activities.length > 0 && activities.every(a => a.symbolIndex !== null);
+
   const handleSymbolClick = (activityIndex: number, iconIndex: number) => {
     setActivities((prevActivities) =>
       prevActivities.map((activity, index) =>
@@ -129,6 +131,13 @@ export default function ProjectComponent({
   };
 
   const saveRows = async () => {
+        if (!allSymbolsSelected) {
+          setSaveStatus({
+            success: false,
+            message: "Please select a symbol for every row before saving.",
+          });
+          return;
+        }    
     setSaving(true);
     setSaveStatus(null);
     const workspaceID = await id;
@@ -206,6 +215,14 @@ export default function ProjectComponent({
   };
 
   const generatePDF = () => {
+    if (!allSymbolsSelected) {
+      setSaveStatus({
+        success: false,
+        message: "Please select a symbol for every row before generating PDF.",
+      });
+      return;
+    }
+
     setGeneratingPdf(true);
 
     try {
@@ -479,12 +496,12 @@ export default function ProjectComponent({
         />
       </Table.Td>
       <Table.Td>
-        <Group>
+        <Group  miw="180px">
           {iconMapping.map((icon, iconIndex) => {
             const IconComponent =
               act.symbolIndex === iconIndex ? icon.filled : icon.outlined;
             return (
-              <Tooltip label={iconIndex === 0 ? "Operations symbol represent process to be performed" : iconIndex === 1 ? "Inspection symbol represent inspection to be performed" : iconIndex === 2 ? "Transportation is the movement of products, men, and equipment" : iconIndex === 3 ? "Delay is the term describing the waiting period in between tasks" : "Storage is the process of holding goods in place, either permanently or temporarily"} key={iconIndex}>
+              <Tooltip label={iconIndex === 0 ? "Operations symbol represent process to be performed" : iconIndex === 1 ? "Inspection symbol represent inspection to be performed" : iconIndex === 2 ? "Transportation is the movement of products, employees, and equipment" : iconIndex === 3 ? "Delay is the term describing the waiting period in between tasks" : "Storage is the process of holding goods in place, either permanently or temporarily"} key={iconIndex}>
               <ActionIcon
                 key={iconIndex}
                 size="sm"
@@ -528,7 +545,7 @@ export default function ProjectComponent({
         {video && is_outsource === false && (
           <AspectRatio
             ratio={16 / 9}
-            style={{ minWidth:"1000px", margin: "0 auto" }}
+            style={{ minWidth:"600px", margin: "0 auto" }}
           >
             <iframe
               src={video}
@@ -541,7 +558,7 @@ export default function ProjectComponent({
         {video && is_outsource === true && (
           <AspectRatio
             ratio={16 / 9}
-            style={{ minWidth:"1000px", margin: "0 auto" }}
+            style={{ minWidth:"600px", margin: "0 auto" }}
           >
             <iframe
               title="Embedded video"
@@ -589,24 +606,46 @@ export default function ProjectComponent({
         </Modal>
 
         <Flex justify="space-between">
-          <Button
-            onClick={saveRows}
-            loading={saving}
-            leftSection={<IconDeviceFloppy size={24} />}
-            variant="filled"
-            color="blue"
+          <Tooltip
+            label="Please select a symbol for every row"
+            disabled={allSymbolsSelected}
+            withArrow
+							
+						
           >
-            Save Activities
-          </Button>
-          <Button
-            leftSection={<IconClipboardTextFilled size={24} />}
-            variant="filled"
-            color="blue"
-            onClick={generatePDF}
-            loading={generatingPdf}
+            <span>
+				   
+              <Button
+                onClick={saveRows}
+                loading={saving}
+                leftSection={<IconDeviceFloppy size={20} />}
+                variant="filled"
+                color="blue"
+                disabled={!allSymbolsSelected}
+              >
+                Save Activities
+              </Button>
+            </span>
+          </Tooltip>
+
+          <Tooltip
+            label="Please select a symbol for every row"
+            disabled={allSymbolsSelected}
+            withArrow
           >
-            Generate PDF
-          </Button>
+            <span>
+              <Button
+                onClick={generatePDF}
+                loading={generatingPdf}
+                leftSection={<IconClipboardTextFilled size={20} />}
+                variant="filled"
+                color="blue"
+                disabled={!allSymbolsSelected}
+              >
+                Generate PDF
+              </Button>
+            </span>
+          </Tooltip>
         </Flex>
 
         <ScrollArea style={{ width: "100%" }}>
