@@ -126,102 +126,88 @@ export async function editProject(formData: FormData) {
   try {
     const session = await auth();
     if (!session) {
-      return {
-        success: false,
-        error: "User not authenticated",
-      };
+      return { success: false, error: "User not authenticated" };
     }
 
-    const projectName = formData.get("projectName")?.toString() || "";
-    const withVideo = formData.get("withVideo") === "true";
-    const video_type = formData.get("video_type")?.toString() || "";
-    const description =
-      formData.get("description")?.toString() || "No description provided";
-    const outsourceLink = formData.get("outsourceLink")?.toString() || "";
-    const fileUrl = formData.get("fileUrl")?.toString() || "";
-    const workspaceID = formData.get("workspaceID")?.toString() || "";
+    // 1) Pull all fields from formData
+    const projectName    = formData.get("projectName")?.toString() || "";
+    const withVideo      = formData.get("with_video") === "true";
+    const video_type     = formData.get("video_type")?.toString() || "";
+    const description    = formData.get("description")?.toString() || "No description provided";
+    const outsourceLink  = formData.get("outsourceLink")?.toString() || "";
+    const fileUrl        = formData.get("fileUrl")?.toString() || "";
+    const workspaceIDStr = formData.get("workspaceID")?.toString() || "";
 
+    // Basic required‐field checks
     if (!projectName) {
-      return {
-        success: false,
-        targetUrl: "",
-        error: "Project name is required",
-      };
+      return { success: false, targetUrl: "", error: "Project name is required" };
     }
-
     if (withVideo) {
       if (!video_type) {
-        return {
-          success: false,
-          targetUrl: "",
-          error: "Video type is required",
-        };
+        return { success: false, targetUrl: "", error: "Video type is required" };
       }
       if (video_type === "upload" && !fileUrl) {
         return { success: false, targetUrl: "", error: "File URL is required" };
       }
       if (video_type === "outsource" && !outsourceLink) {
-        return {
-          success: false,
-          targetUrl: "",
-          error: "Outsource link is required",
-        };
+        return { success: false, targetUrl: "", error: "Outsource link is required" };
       }
     }
 
-    const parsedWorkspaceID =
-      typeof workspaceID === "string" ? parseInt(workspaceID, 10) : workspaceID;
-
-    if (isNaN(parsedWorkspaceID)) {
-      return {
-        success: false,
-        error: "Invalid workspaceID format",
-      };
+    const workspaceID = parseInt(workspaceIDStr, 10);
+    if (isNaN(workspaceID)) {
+      return { success: false, error: "Invalid workspaceID format" };
     }
 
-    const workspace = await db.workspace.findFirst({
-      where: {
-        id: parsedWorkspaceID,
-      },
+    const workspace = await db.workspace.findUnique({
+      where: { id: workspaceID },
     });
-
     if (!workspace) {
-      return {
-        success: false,
-        error: "Workspace not found",
-      };
+      return { success: false, error: "Workspace not found" };
     }
 
-    await db.video.update({
-      where: {
-        workspaceId: parsedWorkspaceID,
+    // 2) Upsert the video record instead of update-only
+    await db.video.upsert({
+      where: { workspaceId: workspaceID },
+      create: {
+        workspaceId: workspaceID,
+        file_path: video_type === "upload" 
+                     ? fileUrl 
+                     : await urlToEmbed(outsourceLink),
+        upload_time: new Date(),
+        is_outsource: video_type !== "upload",
       },
-      data: {
-        file_path:
-          video_type === "upload" ? fileUrl : await urlToEmbed(outsourceLink),
+      update: {
+        file_path: video_type === "upload" 
+                     ? fileUrl 
+                     : await urlToEmbed(outsourceLink),
         upload_time: new Date(),
         is_outsource: video_type !== "upload",
       },
     });
 
+    // 3) Update the workspace fields
     await db.workspace.update({
-      where: {
-        id: parsedWorkspaceID,
-      },
+      where: { id: workspaceID },
       data: {
         project_name: projectName,
-        description: description,
+        description,
         created_at: new Date(),
         with_video: withVideo,
-        video_type: video_type,
+        video_type,
       },
     });
-    const targetUrl = `/workspace/${workspace?.id}`;
-    return { success: true, targetUrl };
-  } catch {
+
+    return {
+      success: true,
+      targetUrl: `/workspace/${workspaceID}`,
+    };
+  } catch (err) {
+    console.error("Project edit error:", err);
     throw new Error("Project edit error.");
   }
 }
+
 
 export async function createProjectWithoutQuota(
   formData: FormData
