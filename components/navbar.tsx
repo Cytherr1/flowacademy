@@ -57,7 +57,11 @@ export default function Navbar({ session }: NavbarProps) {
           }
         >
           <Grid.Col span={{ lg: 2, sm: 3 }}>
-            <Title order={2}>FlowAcademy</Title>
+            <Link href="/" passHref>
+              <Button variant="transparent" bg={"transparent"} color="dark">
+                <Title order={2}>FlowAcademy</Title>
+              </Button>
+            </Link>
           </Grid.Col>
           <Grid.Col span={{ lg: 6, sm: 6 }}>
             <Group justify="flex-start">
