@@ -16,6 +16,7 @@ import {
   Modal,
   ScrollArea,
   Tooltip,
+  NumberInput,
 } from "@mantine/core";
 import {
   IconArrowBigRightLines,
@@ -479,25 +480,23 @@ export default function ProjectComponent({
         />
       </Table.Td>
       <Table.Td>
-        <TextInput
-          type="number"
+        <NumberInput
           value={act.distance}
-          onChange={(e) =>
-            handleChange(actIndex, "distance", Number(e.target.value))
-          }
+          onChange={(e) => handleChange(actIndex, "distance", e || 0)}
           placeholder="Enter distance"
           size="xs"
+          stepHoldDelay={500}
+          stepHoldInterval={(t) => Math.max(1000 / t ** 2, 25)}
         />
       </Table.Td>
       <Table.Td>
-        <TextInput
-          type="number"
+        <NumberInput
           value={act.time}
-          onChange={(e) =>
-            handleChange(actIndex, "time", Number(e.target.value))
-          }
+          onChange={(e) => handleChange(actIndex, "time", e || 0)}
           placeholder="Enter time"
           size="xs"
+          stepHoldDelay={500}
+          stepHoldInterval={(t) => Math.max(1000 / t ** 2, 25)}
         />
       </Table.Td>
       <Table.Td>
