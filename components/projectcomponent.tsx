@@ -38,7 +38,7 @@ import { deleteRow, saveProjectRows } from "@/lib/actions/projectActions";
 import { useDisclosure } from "@mantine/hooks";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import autoTable from "jspdf-autotable"
+import autoTable from "jspdf-autotable";
 import { IconLetterDFilled } from "./iconLetterDFilled";
 
 interface ProjectComponentProps {
@@ -69,7 +69,7 @@ export default function ProjectComponent({
     { outlined: IconCircle, filled: IconCircleFilled },
     { outlined: IconSquare, filled: IconSquareFilled },
     { outlined: IconArrowBigRightLines, filled: IconArrowBigRightLinesFilled },
-    { outlined: IconLetterD, filled: IconLetterDFilled},
+    { outlined: IconLetterD, filled: IconLetterDFilled },
     { outlined: IconTriangleInverted, filled: IconTriangleInvertedFilled },
   ];
 
@@ -94,7 +94,8 @@ export default function ProjectComponent({
     }
   }, [initialRows]);
 
-  const allSymbolsSelected = activities.length > 0 && activities.every(a => a.symbolIndex !== null);
+  const allSymbolsSelected =
+    activities.length > 0 && activities.every((a) => a.symbolIndex !== null);
 
   const handleSymbolClick = (activityIndex: number, iconIndex: number) => {
     setActivities((prevActivities) =>
@@ -131,13 +132,13 @@ export default function ProjectComponent({
   };
 
   const saveRows = async () => {
-        if (!allSymbolsSelected) {
-          setSaveStatus({
-            success: false,
-            message: "Please select a symbol for every row before saving.",
-          });
-          return;
-        }    
+    if (!allSymbolsSelected) {
+      setSaveStatus({
+        success: false,
+        message: "Please select a symbol for every row before saving.",
+      });
+      return;
+    }
     setSaving(true);
     setSaveStatus(null);
     const workspaceID = await id;
@@ -294,7 +295,9 @@ export default function ProjectComponent({
       });
 
       const metrics = calculatePFCMetrics(activities);
-      const finalY = (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY || 40;
+      const finalY =
+        (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable
+          ?.finalY || 40;
 
       if (finalY > doc.internal.pageSize.getHeight() - 60) {
         doc.addPage();
@@ -326,7 +329,9 @@ export default function ProjectComponent({
     }
   };
 
-  const calculatePFCMetrics = (activities: Rows[]): {
+  const calculatePFCMetrics = (
+    activities: Rows[]
+  ): {
     valueAdded: number;
     nonValueAdded: number;
     totalActivities: number;
@@ -496,19 +501,32 @@ export default function ProjectComponent({
         />
       </Table.Td>
       <Table.Td>
-        <Group  miw="180px">
+        <Group miw="180px">
           {iconMapping.map((icon, iconIndex) => {
             const IconComponent =
               act.symbolIndex === iconIndex ? icon.filled : icon.outlined;
             return (
-              <Tooltip label={iconIndex === 0 ? "Operations symbol represent process to be performed" : iconIndex === 1 ? "Inspection symbol represent inspection to be performed" : iconIndex === 2 ? "Transportation is the movement of products, employees, and equipment" : iconIndex === 3 ? "Delay is the term describing the waiting period in between tasks" : "Storage is the process of holding goods in place, either permanently or temporarily"} key={iconIndex}>
-              <ActionIcon
+              <Tooltip
+                label={
+                  iconIndex === 0
+                    ? "Operations symbol represent process to be performed"
+                    : iconIndex === 1
+                    ? "Inspection symbol represent inspection to be performed"
+                    : iconIndex === 2
+                    ? "Transportation is the movement of products, employees, and equipment"
+                    : iconIndex === 3
+                    ? "Delay is the term describing the waiting period in between tasks"
+                    : "Storage is the process of holding goods in place, either permanently or temporarily"
+                }
                 key={iconIndex}
-                size="sm"
-                onClick={() => handleSymbolClick(actIndex, iconIndex)}
               >
-                <IconComponent size={18} />
-              </ActionIcon>
+                <ActionIcon
+                  key={iconIndex}
+                  size="sm"
+                  onClick={() => handleSymbolClick(actIndex, iconIndex)}
+                >
+                  <IconComponent size={18} />
+                </ActionIcon>
               </Tooltip>
             );
           })}
@@ -545,7 +563,7 @@ export default function ProjectComponent({
         {video && is_outsource === false && (
           <AspectRatio
             ratio={16 / 9}
-            style={{ minWidth:"600px", margin: "0 auto" }}
+            style={{ minWidth: "600px", margin: "0 auto" }}
           >
             <iframe
               src={video}
@@ -558,7 +576,7 @@ export default function ProjectComponent({
         {video && is_outsource === true && (
           <AspectRatio
             ratio={16 / 9}
-            style={{ minWidth:"600px", margin: "0 auto" }}
+            style={{ minWidth: "600px", margin: "0 auto" }}
           >
             <iframe
               title="Embedded video"
@@ -605,27 +623,42 @@ export default function ProjectComponent({
           )}
         </Modal>
 
+        <ScrollArea style={{ width: "100%" }}>
+          <Table highlightOnHover withColumnBorders style={{ width: "100%" }}>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Activity No.</Table.Th>
+                <Table.Th>Activity</Table.Th>
+                <Table.Th>Distance (m)</Table.Th>
+                <Table.Th>Time (m)</Table.Th>
+                <Table.Th>Symbols</Table.Th>
+                <Table.Th>Remarks</Table.Th>
+                <Table.Th></Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>{tableRows}</Table.Tbody>
+          </Table>
+        </ScrollArea>
+        <Button onClick={addNewRow} mt="xs" variant="light">
+          <IconPlus size={24} />
+          Add Row
+        </Button>
         <Flex justify="space-between">
           <Tooltip
             label="Please select a symbol for every row"
             disabled={allSymbolsSelected}
             withArrow
-							
-						
           >
-            <span>
-				   
-              <Button
-                onClick={saveRows}
-                loading={saving}
-                leftSection={<IconDeviceFloppy size={20} />}
-                variant="filled"
-                color="blue"
-                disabled={!allSymbolsSelected}
-              >
-                Save Activities
-              </Button>
-            </span>
+            <Button
+              onClick={saveRows}
+              loading={saving}
+              leftSection={<IconDeviceFloppy size={20} />}
+              variant="filled"
+              color="blue"
+              disabled={!allSymbolsSelected}
+            >
+              Save Activities
+            </Button>
           </Tooltip>
 
           <Tooltip
@@ -647,27 +680,6 @@ export default function ProjectComponent({
             </span>
           </Tooltip>
         </Flex>
-
-        <ScrollArea style={{ width: "100%" }}>
-          <Table highlightOnHover withColumnBorders style={{ width: "100%" }}>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Activity No.</Table.Th>
-                <Table.Th>Activity</Table.Th>
-                <Table.Th>Distance (m)</Table.Th>
-                <Table.Th>Time (m)</Table.Th>
-                <Table.Th>Symbols</Table.Th>
-                <Table.Th>Remarks</Table.Th>
-                <Table.Th></Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>{tableRows}</Table.Tbody>
-          </Table>
-        </ScrollArea>
-        <Button onClick={addNewRow} mt="xs" mb="xl" variant="light">
-          <IconPlus size={24} />
-          Add Row
-        </Button>
       </Stack>
     </Center>
   );
