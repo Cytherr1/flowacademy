@@ -426,7 +426,7 @@ export default function ProjectComponent({
           `${metrics.nonValueAddedPercentage}%`,
         ],
         ["Total distance:", `${metrics.totalDistance} m`],
-        ["Total time:", `${metrics.totalTime} min`],
+        ["Total time:", `${metrics.totalTime} sec`],
         [
           "Total number of operation process:",
           metrics.operationCount.toString(),
@@ -629,7 +629,7 @@ export default function ProjectComponent({
                 <Table.Th>Activity No.</Table.Th>
                 <Table.Th>Activity</Table.Th>
                 <Table.Th>Distance (m)</Table.Th>
-                <Table.Th>Time (m)</Table.Th>
+                <Table.Th>Time (sec)</Table.Th>
                 <Table.Th>Symbols</Table.Th>
                 <Table.Th>Remarks</Table.Th>
                 <Table.Th></Table.Th>

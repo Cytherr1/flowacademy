@@ -103,7 +103,7 @@ export default function Navbar({ session }: NavbarProps) {
                 </Button>
               ) : (
                 <Button variant="default" component={Link} href="/signin">
-                  Sign In
+                  Sign Up / Sign In
                 </Button>
               )}
               <ActionIcon
