@@ -31,7 +31,7 @@ export const footData = [
 export const heroData = [
   {
     header: "Free and open source",
-    body: " – no free trial, no bullshit.",
+    body: " – no free trial.",
   },
   {
     header: "Easy to use",
